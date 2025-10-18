@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colores base de la interfaz (Basado en el diseño oscuro) -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Colores principales de la aplicación -->
+    <color name="dark_bg">#FF121212</color> <!-- Fondo oscuro principal de la app -->
+    <color name="card_dark">#FF1E1E1E</color> <!-- Fondo más claro para tarjetas y elementos -->
+
+    <!-- Colores de texto -->
+    <color name="text_light">#FFFFFFFF</color> <!-- Texto principal, blanco -->
+    <color name="text_secondary">#FFAAAAAA</color> <!-- Texto secundario, gris claro -->
+
+    <!-- Color del botón de Play (un verde vibrante es un estándar en apps de música) -->
+    <color name="play_button_color">#FF1DB954</color>
+    <color name="back_button_color">#9765EF</color>
+
+    <!-- Color de la navegación inferior -->
+    <color name="nav_active">#FFFFFFFF</color> <!-- Icono activo en blanco -->
+    <color name="nav_inactive">#FF808080</color> <!-- Icono inactivo en gris -->
+    <color name="bottom_nav_bg">#FFEB3B</color> <!-- Fondo de la barra de navegación-->
+    <color name="gray_light">#121212</color>
+    <color name="bottom_nav_item_color">#FFFFFF</color>
+    <color name="seekBar">#E91E63</color>
+
+    <color name="seekBar_circule">#F44336</color>
+
+</resources>

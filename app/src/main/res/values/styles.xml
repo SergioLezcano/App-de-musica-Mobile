@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="back_buttom_color">
+        <item name="android:tint">@color/back_button_color</item>
+        BotonAtras</style>
+
+    <style name="PlayerControlButton">
+        <item name="android:layout_width">32dp</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:padding">4dp</item>
+        <item name="tint">@color/white</item>
+        PlayerControlButton</style>
+</resources>
