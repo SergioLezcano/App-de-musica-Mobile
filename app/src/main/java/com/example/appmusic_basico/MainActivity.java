@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
                 if (itemId == R.id.nav_home) {
                     selectedFragment = new FragmentHome();
                 } else if (itemId == R.id.nav_search) {
-                    selectedFragment = new Fragment();
+                    selectedFragment = new FragmentSearch();
                 } else if (itemId == R.id.nav_favorite) {
                     selectedFragment = new FragmentFavourite();
                 } else if (itemId == R.id.nav_profile) {
