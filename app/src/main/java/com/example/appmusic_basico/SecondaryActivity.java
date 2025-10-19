@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 public class SecondaryActivity extends AppCompatActivity {
@@ -17,8 +18,9 @@ public class SecondaryActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.music_list);
 
-        ImageView back_button = findViewById(R.id.iv_boton_atras);
+        ImageButton back_button = findViewById(R.id.btn_back);
         FrameLayout ic_play_2 = findViewById(R.id.play_button_layout);
+
 
         //Logica para volver a la pagina anterior
         back_button.setOnClickListener(new View.OnClickListener() {

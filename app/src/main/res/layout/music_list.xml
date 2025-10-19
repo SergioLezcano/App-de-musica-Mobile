@@ -10,6 +10,7 @@
 
 
     <ScrollView
+        android:id="@+id/container_music_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:scrollbars="none"
