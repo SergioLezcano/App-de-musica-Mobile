@@ -1,40 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:layout_marginEnd="16dp">
-    <ImageView
-        android:id="@+id/iv_album_art"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:scaleType="centerCrop"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/bg_circule_image"
-        tools:src="@drawable/album_art_placeholder" />
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="130dp"       android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"     app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp">
 
-    <TextView
-        android:id="@+id/tv_title"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxWidth="120dp"
-        android:textColor="@color/white"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:maxLines="1"
-        android:ellipsize="end"
-        tools:text="Nombre de la Canción o Álbum" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tv_subtitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:maxWidth="120dp"
-        android:textColor="@color/bottom_nav_bg"
-        android:textSize="12sp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        tools:text="Nombre del Artista" />
+        <ImageView
+            android:id="@+id/img_recently_played_cover"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/image_2930" />
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/tv_recently_played_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Album Title"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            android:padding="8dp"/>
+
+        <TextView
+            android:id="@+id/tv_recently_played_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Artist Name"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="14sp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="8dp"/>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

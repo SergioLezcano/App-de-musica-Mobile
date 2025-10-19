@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
-    android:padding="8dp">
+    android:padding="8dp"
+    tools:context=".SecondaryActivity">
 
 
     <ScrollView
@@ -38,23 +39,28 @@
                     tools:ignore="MissingConstraints">
                 </ImageView>
 
+                <!-- Boton de Volver al Menu -->
+
                 <FrameLayout
                     android:id="@+id/fl_bottom_arrow"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     tools:ignore="MissingConstraints">
 
-                    <ImageView
-                        android:id="@+id/iv_boton_atras"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                    <ImageButton
+                        android:id="@+id/btn_back"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="2dp"
+                        android:background="@drawable/bg_rounded_image"
+                        android:contentDescription="volver al menu"
                         android:src="@drawable/arrow_back_24dp"
-                        android:background="@drawable/bg_circule_button_back"
-                        app:tint="@color/black"
-                        android:visibility="visible"
-                        android:padding="12dp">
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent">
 
-                    </ImageView>
+                    </ImageButton>
+
                 </FrameLayout>
 
                 <TextView
