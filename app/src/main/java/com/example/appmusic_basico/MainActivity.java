@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         // 2. Establecer el listener para la navegación
         bottomNav.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
 
+            //Metodo publico para navegar por los item del menu
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 Fragment selectedFragment = null;
@@ -53,10 +54,10 @@ public class MainActivity extends AppCompatActivity {
                 } else if (itemId == R.id.nav_favorite) {
                     selectedFragment = new FragmentFavourite();
                 } else if (itemId == R.id.nav_profile) {
-                    selectedFragment = new Fragment();
+                    selectedFragment = new FragmentProfile();
                 }
 
-
+                // if para cargar el Fragment
                 if (selectedFragment != null) {
                     loadFragment(selectedFragment);
                     return true; // Indica que la selección fue manejada
@@ -96,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
 //
     }
 
+    //Metodo para la navegacion del menu principal
     private void loadFragment(Fragment fragment) {
         getSupportFragmentManager()
                 .beginTransaction()

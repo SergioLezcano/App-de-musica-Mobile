@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/opcion_favoritos"
+        android:title="Agregar a Favoritos" />
+    <item
+        android:id="@+id/opcion_play_list"
+        android:title="Agregar a playlist" />
+    <item
+        android:id="@+id/opcion_fila"
+        android:title="Agregar a la fila" />
+    <item
+        android:id="@+id/opcion_album"
+        android:title="Ver album" />
+    <item
+        android:id="@+id/opcion_artista"
+        android:title="Ver artista" />
+    <item
+        android:id="@+id/opcion_compartir"
+        android:title="Compartir" />
+    <item
+        android:id="@+id/opcion_ocultar"
+        android:title="Ocultar" />
+</menu>

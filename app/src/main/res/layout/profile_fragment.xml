@@ -5,9 +5,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
+    android:padding="12dp"
     android:background="@color/card_dark">
 
+        <!-- SECCION PERFIL DE USUARIO
+        TITULO -->
     <TextView
         android:id="@+id/tv_profile_title"
         android:layout_width="0dp"
@@ -20,6 +22,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- SECCION FOTO PERFIL  -->
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card_profile_picture"
@@ -40,6 +44,7 @@
             android:scaleType="centerCrop"      />
     </androidx.cardview.widget.CardView>
 
+    <!-- CONTENEDOR DATOS DE LA CUENTA  -->
     <LinearLayout
         android:id="@+id/ly_container_profile"
         android:layout_width="0dp"
@@ -50,7 +55,7 @@
         app:layout_constraintTop_toBottomOf="@id/tv_profile_title"
         app:layout_constraintStart_toEndOf="@id/card_profile_picture"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="ll_stats_container">
+        app:layout_constraintBottom_toTopOf="@+id/ll_stats_container">
 
         <TextView
             android:id="@+id/tv_user_name"
@@ -79,10 +84,9 @@
 
         </TextView>
 
-
     </LinearLayout>
 
-
+    <!-- SECCION ESTADO DE LA CUENTA  -->
     <LinearLayout
         android:id="@+id/ll_stats_container"
         android:layout_width="0dp"
@@ -104,6 +108,7 @@
             android:text="8\nArtistas" />
     </LinearLayout>
 
+    <!-- SECCION CONFIGURACION DE LA CUENTA  -->
     <TextView
         android:id="@+id/tv_settings_header"
         android:layout_width="0dp"

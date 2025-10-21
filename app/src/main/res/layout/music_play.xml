@@ -67,7 +67,8 @@
                         android:src="@drawable/more_vert_24dp"
                         android:visibility="visible"
                         android:background="@color/black"
-                        app:tint="@color/white" />
+                        app:tint="@color/white"
+                        app:menu="@menu/menu_opciones_more_vert"/>
 
                 </FrameLayout>
 
