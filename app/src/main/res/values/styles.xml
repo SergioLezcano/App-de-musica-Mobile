@@ -5,6 +5,16 @@
         <item name="android:tint">@color/back_button_color</item>
         BotonAtras</style>
 
+    <style name="ProfileStatText" parent="Widget.AppCompat.TextView">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:lines">2</item>
+    </style>
+
     <style name="PlayerControlButton">
         <item name="android:layout_width">32dp</item>
         <item name="android:layout_height">32dp</item>
