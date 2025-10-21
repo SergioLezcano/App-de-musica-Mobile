@@ -247,15 +247,17 @@
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toEndOf="parent">
 
-                        <ImageView
+                        <ImageButton
                             android:id="@+id/iv_more_vertical_1"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
                             android:contentDescription="Más opciones"
                             android:padding="4dp"
                             android:src="@drawable/more_vert_24dp"
                             android:visibility="visible"
-                            app:tint="@color/white" />
+                            app:tint="@color/white"
+                            android:background="@color/black"
+                            app:menu="@menu/menu_opciones_music_list"/>
 
                     </FrameLayout>
 
@@ -311,15 +313,17 @@
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toEndOf="parent">
 
-                        <ImageView
+                        <ImageButton
                             android:id="@+id/iv_more_vertical_2"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
                             android:contentDescription="Más opciones"
                             android:padding="4dp"
                             android:src="@drawable/more_vert_24dp"
                             android:visibility="visible"
-                            app:tint="@color/white" />
+                            app:tint="@color/white"
+                            android:background="@color/black"
+                            app:menu="@menu/menu_opciones_music_list"/>
 
                     </FrameLayout>
 
@@ -376,15 +380,17 @@
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toEndOf="parent">
 
-                        <ImageView
+                        <ImageButton
                             android:id="@+id/iv_more_vertical_3"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
                             android:contentDescription="Más opciones"
                             android:padding="4dp"
                             android:src="@drawable/more_vert_24dp"
                             android:visibility="visible"
-                            app:tint="@color/white" />
+                            app:tint="@color/white"
+                            android:background="@color/black"
+                            app:menu="@menu/menu_opciones_music_list"/>
 
                     </FrameLayout>
 

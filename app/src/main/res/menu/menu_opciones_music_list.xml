@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/opcion_reproducir"
+        android:title="reproducir" />
+    <item
+        android:id="@+id/opcion_agregar_a_lista"
+        android:title="agregar a lista" />
+    <item
+        android:id="@+id/opcion_agregar_favoritos"
+        android:title="agregar a favoritos" />
+    <item
+        android:id="@+id/opcion_ocultar"
+        android:title="ocultar" />
+</menu>
