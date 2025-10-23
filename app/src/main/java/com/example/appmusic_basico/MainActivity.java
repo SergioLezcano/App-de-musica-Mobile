@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
             bottomNav.setSelectedItemId(R.id.nav_home);
         }
 
-        //RecyclerView favoritos = findViewById(R.id.rv_favorite_artists);
+
         miniPlayerBar = findViewById(R.id.mini_player_bar);
 
         //Configuracion del minPlayer
@@ -86,15 +86,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-//
-//        favoritos.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(MainActivity.this, SecondaryActivity.class);
-//                startActivity(intent);
-//            }
-//        });
-//
+
     }
 
     //Metodo para la navegacion del menu principal
