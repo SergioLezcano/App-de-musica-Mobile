@@ -83,11 +83,17 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //Logica para reabrir el ThirdActivity (vista de reproduccion)
                 Intent intent = new Intent(MainActivity.this, ThirdActivity.class);
+                // Si ya está en la pila, la trae al frente sin recrearla
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(intent);
             }
         });
 
+        // Llama para establecer la visibilidad inicial
+        updateMiniPlayerVisibility();
+
     }
+
 
     //Metodo para la navegacion del menu principal
     private void loadFragment(Fragment fragment) {

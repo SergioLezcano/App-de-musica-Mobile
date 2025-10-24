@@ -149,6 +149,12 @@ public class FragmentHome extends Fragment implements ArtistAdapter.OnItemClickL
         return canciones;
     }
 
+
+
+
+
+
+
     private MediaPlayer mediaPlayer;
 
     // Método de la interfaz de clic que se llama desde el Adapter

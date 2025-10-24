@@ -19,6 +19,7 @@
         android:paddingBottom="5dp"
         tools:layout="@layout/home_fragment"/>
 
+    <!-- Contenedor del miniReprodcutor -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/mini_player_bar"
         android:layout_width="match_parent"

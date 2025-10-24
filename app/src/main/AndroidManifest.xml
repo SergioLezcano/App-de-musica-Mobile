@@ -27,7 +27,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".ThirdActivity" />
+        <activity android:name=".ThirdActivity"
+            android:launchMode="singleTop"  android:exported="false"/>
     </application>
 
 </manifest>
