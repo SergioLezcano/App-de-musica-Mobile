@@ -2,33 +2,54 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <queries>
+        <package android:name="com.spotify.music" />
+    </queries>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppMusic_Basico">
+
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
+
+            <!-- Lanzamiento normal de la app -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity android:name=".SecondaryActivity"
-            android:exported="true" >
+
+            <!-- Redirect URI para Spotify Web API (HTTPS) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="appmusic-web-auth"
+                    android:host="spotify-callback" />
             </intent-filter>
-        </activity>
-        <activity android:name=".ThirdActivity"
-            android:launchMode="singleTop"  android:exported="false"/>
-    </application>
 
+            <!-- Redirect URI para Spotify App Remote (scheme personalizado) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="${redirectSchemeAppRemote}"
+                    android:host="${redirectHostAppRemote}"/>
+            </intent-filter>
+
+        </activity>
+
+        <activity android:name=".SecondaryActivity" android:exported="true"/>
+        <activity android:name=".ThirdActivity" android:launchMode="singleTop" android:exported="false"/>
+    </application>
 </manifest>

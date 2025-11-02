@@ -41,7 +41,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
+        <ImageButton
             android:id="@+id/mini_player_play_pause"
             android:layout_width="36dp"
             android:layout_height="36dp"

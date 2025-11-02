@@ -198,14 +198,16 @@
                     app:layout_constraintEnd_toEndOf="parent">
 
                     <ImageButton
-                        android:id="@+id/ib_aleatorio"
+                        android:id="@+id/ib_stop_playback"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        style="@style/PlayerControlButton"
+                        android:layout_gravity="center"
+                        android:src="@drawable/stop_24dp"
                         android:background="@color/card_dark"
-                        android:src="@drawable/shuffle_24dp"
-                        android:layout_marginEnd="20dp"
-                        android:contentDescription="Reproducción aleatoria" />
+                        style="@style/PlayerControlButton"
+                        android:contentDescription="Pausar"
+                        android:layout_marginEnd="16dp"/>
+
 
                     <ImageButton
                         android:id="@+id/ib_skip_anterior"
@@ -215,7 +217,6 @@
                         android:background="@color/card_dark"
                         android:src="@drawable/skip_previous"
                         android:contentDescription="Canción anterior"
-                        android:layout_marginEnd="14dp"
                         />
 
                     <FrameLayout
@@ -223,8 +224,8 @@
                         android:layout_width="64dp"
                         android:layout_height="64dp"
                         android:background="@drawable/bg_circule_image"
-                        android:layout_marginStart="24dp"
-                        android:layout_marginEnd="24dp">
+                        android:layout_marginStart="12dp"
+                        android:layout_marginEnd="12dp">
 
                         <ImageButton
                             android:id="@+id/ib_play_pause_icon"
@@ -234,6 +235,7 @@
                             android:src="@drawable/play_arrow_24dp"
                             app:tint="@color/black"
                             android:contentDescription="Reproducir" />
+
                     </FrameLayout>
 
                     <ImageButton
@@ -244,7 +246,7 @@
                         android:background="@color/card_dark"
                         android:src="@drawable/skip_next_24dp"
                         android:contentDescription="Canción siguiente"
-                        android:layout_marginStart="14dp" />
+                        android:layout_marginEnd="8dp" />
 
                     <ImageButton
                         android:id="@+id/ib_repeat"
@@ -253,7 +255,7 @@
                         style="@style/PlayerControlButton"
                         android:background="@color/card_dark"
                         android:src="@drawable/repeat_24dp"
-                        android:layout_marginStart="20dp"
+                        android:layout_marginStart="8dp"
                         android:contentDescription="Repetir" />
 
                 </LinearLayout>

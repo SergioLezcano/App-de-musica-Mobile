@@ -11,9 +11,14 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.spotify.android.appremote.api.SpotifyAppRemote;
+
 public class SecondaryActivity extends AppCompatActivity {
+
+    private SpotifyAppRemote mSpotifyAppRemote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,102 +26,96 @@ public class SecondaryActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.music_list);
 
-        ImageButton back_button = findViewById(R.id.btn_back);
-        FrameLayout ic_play_2 = findViewById(R.id.play_button_layout);
+        // --- Views ---
+        ImageButton backButton = findViewById(R.id.btn_back);
+        FrameLayout playButtonLayout = findViewById(R.id.play_button_layout);
+        ImageView cover = findViewById(R.id.img_artist);
+        TextView title = findViewById(R.id.tv_title_cancion);
+        TextView artist = findViewById(R.id.tv_artist_name);
 
+        // --- Intent Data ---
+        Intent intent = getIntent();
+        int songResourceId;
+        String songTitle = "";
+        String songArtist = "";
+        int songImage = 0;
 
-        //Logica para volver a la pagina anterior
-        back_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
+        if (intent != null) {
+            songTitle = intent.getStringExtra("SONG_TITLE");
+            songArtist = intent.getStringExtra("SONG_ARTIST");
+            songImage = intent.getIntExtra("SONG_IMAGE", 0);
+            songResourceId = intent.getIntExtra("SONG_RESOURCE_ID", 0);
+
+            if (title != null) title.setText(songTitle);
+            if (artist != null) artist.setText(songArtist);
+            if (cover != null && songImage != 0) cover.setImageResource(songImage);
+        } else {
+            songResourceId = 0;
+        }
+
+        // --- Back button ---
+        backButton.setOnClickListener(v -> finish());
+
+        // --- Play button: Reproducir usando playlist global ---
+        playButtonLayout.setOnClickListener(v -> {
+            if (mSpotifyAppRemote == null) {
+                mSpotifyAppRemote = MainActivity.getSpotifyAppRemote();
+            }
+
+            if (mSpotifyAppRemote != null) {
+                // Actualizar playlist global en MainActivity
+                MainActivity.currentSongIndex = findSongIndexByResourceId(songResourceId);
+                MainActivity.isMusicPlaying = true;
+
+                // Reproducir la canción usando SpotifyAppRemote
+                String spotifyUri = MainActivity.playlistUris.get(MainActivity.currentSongIndex);
+                mSpotifyAppRemote.getPlayerApi().play(spotifyUri);
+
+                // Abrir ThirdActivity para ver controles
+                Intent playIntent = new Intent(SecondaryActivity.this, ThirdActivity.class);
+                startActivity(playIntent);
+            } else {
+                Toast.makeText(this, "Spotify no conectado", Toast.LENGTH_SHORT).show();
             }
         });
 
-        //logica que pasa de SecondaryActivity a ThirdActivity
-        ic_play_2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(SecondaryActivity.this, ThirdActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        //menu opciones de la primera fila
-        ImageButton btnMore_vert_1 = findViewById(R.id.iv_more_vertical_1);
-
-        btnMore_vert_1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showPopupMenu(v); // Llama a la función para mostrar el menú
-            }
-        });
-
-        //menu opciones de la segunda fila
-        ImageButton btnMore_vert_2 = findViewById(R.id.iv_more_vertical_2);
-
-        btnMore_vert_2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showPopupMenu(v); // Llama a la función para mostrar el menú
-            }
-        });
-
-        //menu opciones de la segunda fila
-        ImageButton btnMore_vert_3 = findViewById(R.id.iv_more_vertical_3);
-
-        btnMore_vert_3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showPopupMenu(v); // Llama a la función para mostrar el menú
-            }
-        });
+        // --- Menú opciones ---
+        int[] moreButtons = {R.id.iv_more_vertical_1, R.id.iv_more_vertical_2, R.id.iv_more_vertical_3};
+        for (int btnId : moreButtons) {
+            ImageButton btn = findViewById(btnId);
+            btn.setOnClickListener(this::showPopupMenu);
+        }
     }
 
-    // Función central para manejar la lógica de mostrar y seleccionar el menú
-    private void showPopupMenu(View view) {
-        // 1. Crear una instancia de PopupMenu, anclándola al View (el ImageButton)
-        PopupMenu popup = new PopupMenu(this, view);
-
-        // 2. Inflar el menú (cargar las opciones del XML)
-        popup.getMenuInflater().inflate(R.menu.menu_opciones_music_list, popup.getMenu());
-
-        // 3. Asignar el Listener para manejar la selección de opciones
-        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                // Lógica para manejar la acción
-                return handleMenuItemSelection(item);
+    // Encuentra la posición de la canción en la playlist global
+    private int findSongIndexByResourceId(int resourceId) {
+        for (int i = 0; i < MainActivity.globalPlaylist.size(); i++) {
+            if (MainActivity.globalPlaylist.get(i).getSongResourceId() == resourceId) {
+                return i;
             }
-        });
+        }
+        return 0; // fallback al primero
+    }
 
-        // 4. Mostrar el menú
+    // Menú Popup centralizado
+    private void showPopupMenu(View view) {
+        PopupMenu popup = new PopupMenu(this, view);
+        popup.getMenuInflater().inflate(R.menu.menu_opciones_music_list, popup.getMenu());
+        popup.setOnMenuItemClickListener(this::handleMenuItemSelection);
         popup.show();
-
     }
 
     private boolean handleMenuItemSelection(MenuItem item) {
         int id = item.getItemId();
+        String msg = "";
 
-        // Uso de if/else para la lógica de selección
-        if (id == R.id.opcion_reproducir) {
-            Toast.makeText(this, "Acción: Reproducir música", Toast.LENGTH_SHORT).show();
-            // Lógica de accion
-            return true;
-        } else if (id == R.id.opcion_agregar_favoritos) {
-            Toast.makeText(this, "Acción: Agregar a favoritos", Toast.LENGTH_SHORT).show();
-            // Lógica de accion requerida
-            return true;
-        } else if (id == R.id.opcion_agregar_a_lista) {
-            Toast.makeText(this, "Acción: Agregar a la lista", Toast.LENGTH_SHORT).show();
-            // Lógica de accion requerida
-            return true;
-        } else if (id == R.id.opcion_ocultar) {
-            Toast.makeText(this, "Acción: Ocultar", Toast.LENGTH_SHORT).show();
-            // Lógica de accion requerida
-            return true;
-        }
+        if (id == R.id.opcion_reproducir) msg = "Reproducir música";
+        else if (id == R.id.opcion_agregar_favoritos) msg = "Agregar a favoritos";
+        else if (id == R.id.opcion_agregar_a_lista) msg = "Agregar a la lista";
+        else if (id == R.id.opcion_ocultar) msg = "Ocultar";
+        else return false;
 
-        return false; // Indica que la acción no fue manejada
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        return true;
     }
 }

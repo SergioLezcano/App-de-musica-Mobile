@@ -1,14 +1,14 @@
 package com.example.appmusic_basico;
 
-
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,184 +17,165 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.appmusic_basico.api.RetrofitClient;
+import com.example.appmusic_basico.api.SpotifyRecentlyPlayedResponse;
+import com.example.appmusic_basico.api.SpotifyService;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import adapters.ArtistAdapter;
 import adapters.RecentlyPlayedAdapter;
 import models.Cancion_Reciente;
-import models.Artistas;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
+public class FragmentHome extends Fragment implements RecentlyPlayedAdapter.OnItemClickListener {
 
-public class FragmentHome extends Fragment implements ArtistAdapter.OnItemClickListener, RecentlyPlayedAdapter.OnItemClickListener{
+    private RecyclerView recyclerView;
+    private RecentlyPlayedAdapter adapter;
+    private List<Cancion_Reciente> cancionesRecientes = new ArrayList<>();
+    private TextView tvSpotifyStatus; // Nuevo TextView para mostrar el estado del token
+    private static final String TAG = "FragmentHome";
 
-    private static final int LAYOUT_RES_ID = R.layout.home_fragment;
+    // =========================================================================
+    // CICLO DE VIDA
+    // =========================================================================
 
-    public FragmentHome(){
-
-    }
-
-    //Metodo para inflar (mostar) el home_fragment
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
-        return inflater.inflate(LAYOUT_RES_ID, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.home_fragment, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        // 1. Identificar el elemento que se puede hacer clic (el contenedor de "Nuevo Lanzamiento")
-        ImageView nuevoLanzamiento = view.findViewById(R.id.iv_new_release_album_art);
-        FrameLayout play_button = view.findViewById(R.id.fl_play_button);
 
-        if (nuevoLanzamiento != null){
-            // 2. Establecer el Listener de click
-            nuevoLanzamiento.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // 3. Crear el Intent para iniciar SecondaryActivity
-                    Intent intent = new Intent(getActivity(), SecondaryActivity.class);
+        // --- Mini sección: Nuevo Lanzamiento ---
+        ImageView cover = view.findViewById(R.id.iv_new_release_album_art);
+        FrameLayout playBtn = view.findViewById(R.id.fl_play_button);
+        TextView titleNew = view.findViewById(R.id.tv_track_title);
 
-                    // 4. Iniciar la Activity
-                    startActivity(intent);
+        // 💡 Inicializar TextView de estado
+        tvSpotifyStatus = view.findViewById(R.id.tv_spotify_status);
+
+        titleNew.setText("Never Gonna Give You Up");
+
+        // ❌ Play Button comentado, solo se usa para el ejemplo
+        // playBtn.setOnClickListener(v -> {
+        //     if (getActivity() instanceof MainActivity) {
+        //         ((MainActivity) getActivity()).playSongFromFragment(0);
+        //     }
+        // });
+
+        cover.setOnClickListener(v ->
+                startActivity(new Intent(getActivity(), ThirdActivity.class))
+        );
+
+        // --- RecyclerView de canciones recientes ---
+        recyclerView = view.findViewById(R.id.rv_recently_played);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+
+        adapter = new RecentlyPlayedAdapter(cancionesRecientes, this);
+        recyclerView.setAdapter(adapter);
+
+        // 🔥 Cargar canciones recientes desde la API de Spotify
+        cargarCancionesRecientes();
+    }
+
+    // 💡 Método para reintentar la carga (útil si la autenticación es asíncrona)
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Intentar cargar datos de nuevo si regresamos al fragmento y el token ya existe
+        if (MainActivity.spotifyAccessToken != null && cancionesRecientes.isEmpty()) {
+            cargarCancionesRecientes();
+        }
+    }
+
+
+    // =========================================================================
+    // LÓGICA DE LA API DE SPOTIFY
+    // =========================================================================
+
+    public void cargarCancionesRecientes() {
+        // ⚠️ Acceso al token como variable estática pública de MainActivity
+        String accessToken = MainActivity.spotifyAccessToken;
+
+        if (accessToken == null || accessToken.isEmpty()) {
+            Log.e(TAG, "❌ No hay token disponible. La MainActivity debe iniciar la autenticación.");
+            if (tvSpotifyStatus != null) {
+                tvSpotifyStatus.setText("❌ Spotify: Esperando inicio de sesión...");
+            }
+            // Opcional: Si el token falta, podrías forzar la apertura de la autenticación
+            // if (getActivity() instanceof MainActivity) {
+            //     ((MainActivity) getActivity()).startSpotifyWebAuth();
+            // }
+            return;
+        }
+
+        if (tvSpotifyStatus != null) {
+            tvSpotifyStatus.setText("✅ Spotify: Token OK. Cargando datos...");
+        }
+
+        SpotifyService api = RetrofitClient.getClient().create(SpotifyService.class);
+        api.getRecentlyPlayed("Bearer " + accessToken).enqueue(new Callback<SpotifyRecentlyPlayedResponse>() {
+            @Override
+            public void onResponse(Call<SpotifyRecentlyPlayedResponse> call, Response<SpotifyRecentlyPlayedResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    cancionesRecientes.clear();
+
+                    for (SpotifyRecentlyPlayedResponse.Item item : response.body().getItems()) {
+                        String titulo = item.getTrack().getName();
+                        String artista = item.getTrack().getArtists().get(0).getName();
+
+                        // Nota: El recurso de imagen R.drawable.image_1034 debe existir.
+                        cancionesRecientes.add(
+                                new Cancion_Reciente(titulo, artista, R.drawable.image_1034, 0)
+                        );
+                    }
+
+                    adapter.notifyDataSetChanged();
+                    Log.d(TAG, "✅ Canciones recientes cargadas: " + cancionesRecientes.size());
+                    if (tvSpotifyStatus != null) {
+                        tvSpotifyStatus.setText("✅ Spotify: Datos cargados.");
+                    }
+
+                } else {
+                    Log.e(TAG, "❌ Error en respuesta: " + response.code() + " - Mensaje: " + response.errorBody());
+                    if (tvSpotifyStatus != null) {
+                        tvSpotifyStatus.setText("❌ Spotify: Error API (" + response.code() + ").");
+                    }
+                    if (response.code() == 401) {
+                        // El token ha expirado. Forzar reautenticación en MainActivity
+                        Toast.makeText(getContext(), "Token expirado. Reintentando iniciar sesión.", Toast.LENGTH_LONG).show();
+                        if (getActivity() instanceof MainActivity) {
+                            ((MainActivity) getActivity()).authenticateSpotify();
+                        }
+                    }
                 }
-            });
-        }
-        // Lógica para que el boton play del la sección nuevos lanzamientos pase y muestre al ThirdActivity
-        if (play_button != null){
+            }
 
-            play_button.setOnClickListener(new View.OnClickListener() {
-                  @Override
-                  public void onClick(View v) {
-                        Intent intent = new Intent(getActivity(), ThirdActivity.class);
-                        startActivity(intent);
-                  }
-            });
-        }
-
-        // 2. Lógica para la sección "Tus Artistas Favoritos"
-        // Referencia del recyclerView de Artistas favoritos
-        RecyclerView rvArtistasFavoritos = view.findViewById(R.id.rv_favorite_artists);
-
-        // b. Preparar el DataSet (Lista de datos)
-        List<Artistas> artistasFavoritos = getMockArtistas();
-
-        // c. Configurar el LayoutManager
-        rvArtistasFavoritos.setLayoutManager(new LinearLayoutManager(
-                getContext(),
-                LinearLayoutManager.HORIZONTAL,
-                false
-        ));
-
-        // d. Crear y asignar el Adapter (CREAR LA CLASE: ArtistAdapter)
-        ArtistAdapter adapterArtistas = new ArtistAdapter(artistasFavoritos, this);
-        rvArtistasFavoritos.setAdapter(adapterArtistas);
-
-
-        // 1.Logica para la seccion de Reproducido recientemente
-        RecyclerView rvRecentlyPlayed = view.findViewById(R.id.rv_recently_played);
-
-        // 2. Prepara los datos (Datos Mock/Simulados)
-        List<Cancion_Reciente> cancionesRecientes = getMockCanciones();
-
-        // 3. Configura el LayoutManager (Horizontal)
-        rvRecentlyPlayed.setLayoutManager(new LinearLayoutManager(
-                getContext(),
-                LinearLayoutManager.HORIZONTAL,
-               false
-        ));
-        // 4. Crear y asignar el Adapter (CREA LA CLASE: Cancion_Reciente)
-        RecentlyPlayedAdapter adapterCanciones = new RecentlyPlayedAdapter(cancionesRecientes, this);
-        rvRecentlyPlayed.setAdapter(adapterCanciones);
+            @Override
+            public void onFailure(Call<SpotifyRecentlyPlayedResponse> call, Throwable t) {
+                Log.e(TAG, "❌ Fallo de conexión: " + t.getMessage(), t);
+                if (tvSpotifyStatus != null) {
+                    tvSpotifyStatus.setText("❌ Spotify: Fallo de red.");
+                }
+            }
+        });
     }
 
-    // --- Implementación de la Interface de Clicks (ArtistAdapter.OnItemClickListener) ---
-    @Override
-    public void onItemClick(Artistas artista) {
-        // Esta función se ejecuta cuando el usuario toca un ítem de la lista de artistas.
-
-        Toast.makeText(getContext(), "Has seleccionado a: " + artista.getArtista(), Toast.LENGTH_SHORT).show();
-
-    }
+    // =========================================================================
+    // MANEJO DE EVENTOS
+    // =========================================================================
 
     @Override
-    public void onItemClick(Cancion_Reciente cancionReciente) {
-        Toast.makeText(getContext(), "Reproduciendo: " + cancionReciente.getTitulo() + " de " + cancionReciente.getArtistaName(), Toast.LENGTH_SHORT).show();
-        // Aquí deberia iniciar una Activity o un PlayerService
-    }
-
-    private List<Artistas> getMockArtistas() {
-        List<Artistas> artistasFicticios = new ArrayList<>();
-        artistasFicticios.add(new Artistas(
-                "1er artista de prueba",
-                R.drawable.image_1034
-        ));
-        artistasFicticios.add(new Artistas(
-                "2do artista de prueba",
-                R.drawable.image_2930
-        ));
-        artistasFicticios.add(new Artistas(
-                "3er artista de prueba",
-                R.drawable.image_2930
-        ));
-        return artistasFicticios;
-    }
-
-    private List<Cancion_Reciente> getMockCanciones() {
-        // Simulación de carga de datos para "Reproducido Recientemente"
-        List<Cancion_Reciente> canciones = new ArrayList<>();
-        canciones.add(new Cancion_Reciente("Canción 1", "Artista X", R.drawable.image_2930));
-        canciones.add(new Cancion_Reciente("Canción 2", "Artista Y", R.drawable.image_2930));
-        canciones.add(new Cancion_Reciente("Canción 3", "Artista W", R.drawable.image_2930));
-        return canciones;
-    }
-
-
-
-
-
-
-
-    private MediaPlayer mediaPlayer;
-
-    // Método de la interfaz de clic que se llama desde el Adapter
-    public void onSongClick(Cancion_Reciente cancion) {
-        // 1. Detener cualquier reproducción anterior
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-
-        // 2. Implementar la inicialización y reproducción
-        try {
-            // Obtenemos el ID de recurso (ej: R.raw.song_a)
-            int recurso = cancion.getResourceId();
-
-            // Inicializar el MediaPlayer con el recurso local
-            mediaPlayer = MediaPlayer.create(getContext(), recurso);
-
-            // Iniciar la reproducción
-            mediaPlayer.start();
-
-            Toast.makeText(getContext(), "Reproduciendo: " + cancion.getTitulo(), Toast.LENGTH_SHORT).show();
-            Toast.makeText(getContext(), "Artista" + cancion.getArtistaName(), Toast.LENGTH_SHORT).show();
-
-        } catch (Exception e) {
-            Toast.makeText(getContext(), "Error al iniciar la reproducción.", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
+    public void onItemClick(Cancion_Reciente cancion) {
+        if (getActivity() instanceof MainActivity) {
+            // La función playSongFromFragment debe estar implementada en MainActivity
+            ((MainActivity) getActivity()).playSongFromFragment(cancion.getSongResourceId());
         }
     }
-    //⚠️ Importante: Liberar el MediaPlayer cuando el Fragment sea destruido
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mediaPlayer != null) {
-            mediaPlayer.release(); // Libera los recursos del sistema
-            mediaPlayer = null;
-        }
-    }
-
 }
-
-

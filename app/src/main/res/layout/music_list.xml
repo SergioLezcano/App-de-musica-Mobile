@@ -28,7 +28,8 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="4dp">
+                android:padding="4dp"
+                android:layout_marginTop="24dp">
 
                 <ImageView
                     android:id="@+id/img_artist"
@@ -70,11 +71,28 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Titulo de la canción"
+                    android:orientation="vertical"
                     android:textAlignment="center"
                     android:textColor="@color/black"
                     android:textSize="24dp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent">
+
+                </TextView>
+
+                <TextView
+                    android:id="@+id/tv_artist_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="32dp"
+                    android:orientation="vertical"
+                    android:text="Nombre del artista"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:textSize="20dp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    tools:layout_editor_absoluteX="4dp">
 
                 </TextView>
 
@@ -95,8 +113,8 @@
 
                     <FrameLayout
                         android:id="@+id/play_button_layout"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         >
 
@@ -105,7 +123,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="@drawable/bg_circle_button"
-                            android:padding="12dp"
+                            android:padding="16dp"
                             android:src="@drawable/play_arrow_24dp"
                             app:tint="@color/white" />
                     </FrameLayout>
