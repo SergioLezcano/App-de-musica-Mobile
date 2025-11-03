@@ -1,6 +1,5 @@
 package com.example.appmusic_basico;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 
@@ -23,7 +22,6 @@ public class SecondaryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.music_list);
 
         // --- Views ---
@@ -56,24 +54,33 @@ public class SecondaryActivity extends AppCompatActivity {
         // --- Back button ---
         backButton.setOnClickListener(v -> finish());
 
-        // --- Play button: Reproducir usando playlist global ---
+        // --- Play button ---
         playButtonLayout.setOnClickListener(v -> {
-            if (mSpotifyAppRemote == null) {
-                mSpotifyAppRemote = MainActivity.getSpotifyAppRemote();
-            }
+            // Obtener conexión a Spotify
+            mSpotifyAppRemote = MainActivity.getSpotifyAppRemote();
 
             if (mSpotifyAppRemote != null) {
-                // Actualizar playlist global en MainActivity
-                MainActivity.currentSongIndex = findSongIndexByResourceId(songResourceId);
+                // Actualizar índice y estado global
+                int songIndex = findSongIndexByUri(String.valueOf(songResourceId));
+                MainActivity.currentSongIndex = songIndex;
                 MainActivity.isMusicPlaying = true;
 
-                // Reproducir la canción usando SpotifyAppRemote
-                String spotifyUri = MainActivity.playlistUris.get(MainActivity.currentSongIndex);
-                mSpotifyAppRemote.getPlayerApi().play(spotifyUri);
+                // Obtener URI de la canción
+                String spotifyUri = MainActivity.playlistUris.get(songIndex);
 
-                // Abrir ThirdActivity para ver controles
-                Intent playIntent = new Intent(SecondaryActivity.this, ThirdActivity.class);
-                startActivity(playIntent);
+                // Reproducir la canción con callbacks
+                mSpotifyAppRemote.getPlayerApi().play(spotifyUri)
+                        .setResultCallback(empty -> {
+                            Toast.makeText(this, "Reproduciendo: " + title, Toast.LENGTH_SHORT).show();
+                            // Abrir ThirdActivity solo después de que la reproducción inicia
+                            Intent playIntent = new Intent(SecondaryActivity.this, ThirdActivity.class);
+                            startActivity(playIntent);
+                        })
+                        .setErrorCallback(error -> {
+                            Toast.makeText(this, "Error al reproducir canción", Toast.LENGTH_SHORT).show();
+                            android.util.Log.e("SecondaryActivity", "Error al reproducir: " + String.valueOf(error));
+                        });
+
             } else {
                 Toast.makeText(this, "Spotify no conectado", Toast.LENGTH_SHORT).show();
             }
@@ -88,14 +95,15 @@ public class SecondaryActivity extends AppCompatActivity {
     }
 
     // Encuentra la posición de la canción en la playlist global
-    private int findSongIndexByResourceId(int resourceId) {
+    private int findSongIndexByUri(String spotifyUri) {
         for (int i = 0; i < MainActivity.globalPlaylist.size(); i++) {
-            if (MainActivity.globalPlaylist.get(i).getSongResourceId() == resourceId) {
+            if (spotifyUri.equals(MainActivity.globalPlaylist.get(i).getSpotifyUri())) {
                 return i;
             }
         }
-        return 0; // fallback al primero
+        return 0;
     }
+
 
     // Menú Popup centralizado
     private void showPopupMenu(View view) {
@@ -118,4 +126,10 @@ public class SecondaryActivity extends AppCompatActivity {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         return true;
     }
+
+
 }
+
+
+
+

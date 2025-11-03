@@ -1,92 +1,116 @@
 package com.example.appmusic_basico;
 
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View; // Importación necesaria para el mini-reproductor
-import android.widget.ImageButton; // Importación necesaria
-import android.widget.TextView; // Importación necesaria
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-// IMPORTACIONES SPOTIFY
 import com.spotify.sdk.android.auth.AuthorizationClient;
 import com.spotify.sdk.android.auth.AuthorizationRequest;
 import com.spotify.sdk.android.auth.AuthorizationResponse;
-
 import com.spotify.android.appremote.api.ConnectionParams;
 import com.spotify.android.appremote.api.Connector;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
+import com.spotify.protocol.client.Subscription;
+import com.spotify.protocol.types.PlayerState;
+import com.spotify.protocol.types.Track;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import managers.PlaylistManager;
 import models.Cancion_Reciente;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnItemSelectedListener {
 
-    // 1. CONSTANTES CRÍTICAS
     private static final String CLIENT_ID = "d4f8c9e33110499c895d46521552389c";
     private static final String REDIRECT_URI = "spotify-auth-app-basico://callback";
     private static final int REQUEST_CODE = 1337;
-
-    // Tags de Fragmentos
-    private static final String HOME_FRAGMENT_TAG = "HomeFragment";
-    private static final String SEARCH_FRAGMENT_TAG = "SearchFragment";
-    private static final String FAVOURITE_FRAGMENT_TAG = "FavouriteFragment";
-    private static final String PROFILE_FRAGMENT_TAG = "ProfileFragment";
-
-    // ✅ DECLARACIONES SECUNDARIAS
-    public static int currentSongIndex;
-    public static boolean isMusicPlaying;
-    public static List<String> playlistUris = new ArrayList<>();
-    public static List<Cancion_Reciente> globalPlaylist = new ArrayList<>();
-    public static MediaPlayer globalMediaPlayer;
-
-    // 2. VARIABLES DE ESTADO
-    private static SpotifyAppRemote mSpotifyAppRemote;
-    public static String spotifyAccessToken = null;
     private static final String TAG = "SpotifyMusicApp";
+    private static final String HOME_FRAGMENT_TAG = "HomeFragment";
 
-    // Referencia a la barra de navegación
+    public static SpotifyAppRemote mSpotifyAppRemote;
+    public static String spotifyAccessToken = null;
+    private static String mPendingSpotifyUri = null;
+
     private BottomNavigationView bottomNavigationView;
-
-    // 💡 Referencias al Mini-Reproductor
     private View miniPlayerBar;
     private TextView miniPlayerTrackTitle;
     private ImageButton miniPlayerPlayPauseButton;
+    private Subscription<PlayerState> mPlayerStateSubscription;
 
-    // =========================================================================
-    // 3. CICLO DE VIDA DE LA ACTIVIDAD
-    // =========================================================================
+    // Variables globales
+    public static int currentSongIndex = 0;
+    public static boolean isMusicPlaying = false;
+    public static List<String> playlistUris = new ArrayList<>();
+    public static List<Cancion_Reciente> globalPlaylist = new ArrayList<>();
+    public static PlaylistManager playlistManager;
+    // 💡 Nuevo: Bandera estática para solicitar reconexión
+    public static boolean shouldReconnectSpotify = false;
+
+    private FragmentHome fragmentHome;
+    private FragmentFavourite fragmentFavourite;
+    private FragmentSearch fragmentSearch;
+    private FragmentProfile fragmentProfile;
+    private Fragment activeFragment;
+    private Track currentTrack;
+    private boolean isPlaying;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 1. Inicializar UI de navegación
-        bottomNavigationView = findViewById(R.id.bottom_navigation_bar);
-        bottomNavigationView.setOnItemSelectedListener(this);
+        // Inicializar fragments
+        fragmentHome = new FragmentHome();
+        fragmentFavourite = new FragmentFavourite();
+        fragmentSearch = new FragmentSearch();
+        fragmentProfile = new FragmentProfile();
 
-        // 💡 2. Inicializar UI del Mini-Reproductor y Listeners
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, fragmentProfile, "ProfileFragment").hide(fragmentProfile)
+                .add(R.id.fragment_container, fragmentFavourite, "FavouriteFragment").hide(fragmentFavourite)
+                .add(R.id.fragment_container, fragmentSearch, "SearchFragment").hide(fragmentSearch)
+                .add(R.id.fragment_container, fragmentHome, "HomeFragment")
+                .commit();
+
+        activeFragment = fragmentHome;
+
+        bottomNavigationView = findViewById(R.id.bottom_navigation_bar);
+        bottomNavigationView.setOnItemSelectedListener(this::onNavigationItemSelected);
+
+        // Mini Player
         miniPlayerBar = findViewById(R.id.mini_player_bar);
         miniPlayerTrackTitle = findViewById(R.id.mini_player_track_title);
         miniPlayerPlayPauseButton = findViewById(R.id.mini_player_play_pause);
 
-        // Listener para alternar Play/Pause en el mini-reproductor
         miniPlayerPlayPauseButton.setOnClickListener(v -> togglePlayPause());
 
-        // 3. Autenticación y carga inicial
+        miniPlayerBar.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ThirdActivity.class);
+
+            // Pasa la información relevante
+            intent.putExtra("TRACK_NAME", currentTrack.name);
+            intent.putExtra("ARTIST_NAME", currentTrack.artist.name);
+            intent.putExtra("TRACK_URI", currentTrack.uri);
+            intent.putExtra("IS_PLAYING", isPlaying);  // Pasa si está pausado o no
+
+            startActivity(intent);
+        });
+
+        // Autenticación Spotify
         if (spotifyAccessToken == null) {
             authenticateSpotify();
         }
@@ -100,66 +124,79 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     protected void onStart() {
         super.onStart();
         if (spotifyAccessToken != null && mSpotifyAppRemote == null) {
-            connectSpotifyRemote(false);
+            connectSpotifyRemote(true);
+        }
+
+        // 💡 Verifica si ThirdActivity solicitó una reconexión
+        if (shouldReconnectSpotify) {
+            shouldReconnectSpotify = false; // Restablecer la bandera
+            reconnectSpotifyIfNecessary();
         }
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mSpotifyAppRemote != null) {
-            // Importante: Desconectar App Remote para liberar recursos
-            SpotifyAppRemote.disconnect(mSpotifyAppRemote);
-            mSpotifyAppRemote = null;
+    // 💡 Nuevo: Método de reconexión de instancia
+    public void reconnectSpotifyIfNecessary() {
+        if (mSpotifyAppRemote == null || !mSpotifyAppRemote.isConnected()) {
+            connectSpotifyRemote(false); // Llama a tu método de instancia
         }
     }
 
-    // =========================================================================
-    // 3.1 CARGA Y NAVEGACIÓN DE FRAGMENTOS
-    // =========================================================================
+    private void updateMiniPlayerState(PlayerState playerState) {
+        // Obtener la canción que se está reproduciendo
+        Track currentTrack = playerState.track;
+
+        // Actualizar UI del mini reproductor con el nombre de la canción y el artista
+        if (currentTrack != null) {
+            miniPlayerTrackTitle.setText(currentTrack.name + " - " + currentTrack.artist.name);
+
+            // Cambiar el ícono de Play/Pause según el estado de la canción (si está en pausa o reproduciéndose)
+            int playPauseIcon = playerState.isPaused ? R.drawable.play_arrow_24dp : R.drawable.pause_24dp;
+            miniPlayerPlayPauseButton.setImageResource(playPauseIcon);
+            miniPlayerBar.setVisibility(View.VISIBLE);  // Asegurar que el mini reproductor sea visible
+        } else {
+            miniPlayerBar.setVisibility(View.GONE);  // Si no hay ninguna canción, esconder el mini reproductor
+        }
+    }
+
+
+
+    // Fragment navigation
+    private void showFragment(Fragment fragmentToShow) {
+        if (fragmentToShow == activeFragment) return;
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.hide(activeFragment);
+        ft.show(fragmentToShow);
+        ft.commit();
+        activeFragment = fragmentToShow;
+    }
 
     private void loadHomeFragment() {
-        switchFragment(new FragmentHome(), HOME_FRAGMENT_TAG);
+        showFragment(fragmentHome);
     }
 
-    public void switchFragment(Fragment fragment, String tag) {
-        Log.d(TAG, "Cambiando a Fragmento: " + tag);
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, fragment, tag);
-        transaction.commit();
+    public void triggerHomeContentLoad() {
+        if (spotifyAccessToken != null && fragmentHome != null) {
+            fragmentHome.cargarCancionesRecientes();
+        }
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        Fragment selectedFragment = null;
-        String tag = null;
+        Fragment fragmentToShow = null;
+        int id = item.getItemId();
+        if (id == R.id.nav_home) fragmentToShow = fragmentHome;
+        else if (id == R.id.nav_search) fragmentToShow = fragmentSearch;
+        else if (id == R.id.nav_favorite) fragmentToShow = fragmentFavourite;
+        else if (id == R.id.nav_profile) fragmentToShow = fragmentProfile;
 
-        if (item.getItemId() == R.id.nav_home) {
-            selectedFragment = new FragmentHome();
-            tag = HOME_FRAGMENT_TAG;
-        } else if (item.getItemId() == R.id.nav_search) {
-            selectedFragment = new FragmentSearch();
-            tag = SEARCH_FRAGMENT_TAG;
-        } else if (item.getItemId() == R.id.nav_favorite) {
-            selectedFragment = new FragmentFavourite();
-            tag = FAVOURITE_FRAGMENT_TAG;
-        } else if (item.getItemId() == R.id.nav_profile){
-            selectedFragment = new FragmentProfile();
-            tag = PROFILE_FRAGMENT_TAG;
-        }
-
-        if (selectedFragment != null) {
-            switchFragment(selectedFragment, tag);
+        if (fragmentToShow != null) {
+            showFragment(fragmentToShow);
             return true;
         }
         return false;
     }
 
-
-    // =========================================================================
-    // 4. FLUJO DE AUTENTICACIÓN SPOTIFY ANDROID SDK
-    // =========================================================================
-
+    // Spotify Authentication
     public void authenticateSpotify() {
         String[] scopes = new String[]{
                 "user-read-private",
@@ -170,162 +207,126 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 "streaming",
                 "user-read-recently-played"
         };
-
-        AuthorizationRequest.Builder builder =
-                new AuthorizationRequest.Builder(CLIENT_ID, AuthorizationResponse.Type.TOKEN, REDIRECT_URI)
-                        .setScopes(scopes);
-
-        AuthorizationRequest request = builder.build();
-
+        AuthorizationRequest request = new AuthorizationRequest.Builder(CLIENT_ID,
+                AuthorizationResponse.Type.TOKEN, REDIRECT_URI)
+                .setScopes(scopes).build();
         AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
-
         if (requestCode == REQUEST_CODE) {
             AuthorizationResponse response = AuthorizationClient.getResponse(resultCode, intent);
-
             switch (response.getType()) {
                 case TOKEN:
                     spotifyAccessToken = response.getAccessToken();
-                    Toast.makeText(this, "Conexión Web API exitosa.", Toast.LENGTH_SHORT).show();
-                    connectSpotifyRemote(false);
-
-                    Fragment fragment = getSupportFragmentManager().findFragmentByTag(HOME_FRAGMENT_TAG);
-                    if (fragment instanceof FragmentHome) {
-                        ((FragmentHome) fragment).cargarCancionesRecientes();
-                    }
+                    connectSpotifyRemote(true);
                     break;
-
                 case ERROR:
-                    Log.e(TAG, "❌ Error de autenticación: " + response.getError());
-                    Toast.makeText(this, "Error de conexión: " + response.getError(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Error de autenticación: " + response.getError(), Toast.LENGTH_LONG).show();
                     break;
-
                 default:
-                    Log.d(TAG, "Autenticación cancelada.");
-                    Toast.makeText(this, "Conexión cancelada.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Autenticación cancelada.", Toast.LENGTH_SHORT).show();
             }
         }
+        triggerHomeContentLoad();
     }
 
-
-    // =========================================================================
-    // 5. CONEXIÓN SPOTIFY APP REMOTE & REPRODUCCIÓN
-    // =========================================================================
-
-    private void connectSpotifyRemote(boolean showAuthView) {
+    // Spotify App Remote
+    public void connectSpotifyRemote(boolean showAuthView) {
         ConnectionParams connectionParams = new ConnectionParams.Builder(CLIENT_ID)
                 .setRedirectUri(REDIRECT_URI)
                 .showAuthView(showAuthView)
                 .build();
 
         SpotifyAppRemote.connect(this, connectionParams, new Connector.ConnectionListener() {
-
             @Override
             public void onConnected(SpotifyAppRemote spotifyAppRemote) {
                 mSpotifyAppRemote = spotifyAppRemote;
                 Log.d(TAG, "✅ Spotify App Remote conectado.");
-                Toast.makeText(MainActivity.this, "App Remote conectado.", Toast.LENGTH_SHORT).show();
 
-                // 💡 INICIA LA SUSCRIPCIÓN AL ESTADO DEL REPRODUCTOR
-                subscribeToPlayerState();
+                // 💡 CAMBIO CLAVE: Inicializar o configurar el PlaylistManager AQUÍ
+                if (playlistManager == null) {
+                    // Inicializar si es la primera vez
+                    playlistManager = new PlaylistManager(globalPlaylist, mSpotifyAppRemote);
+                } else {
+                    // Actualizar la referencia del Remote si ya existía
+                    playlistManager.setSpotifyAppRemote(mSpotifyAppRemote);
+                }
+
+                subscribeToPlayerStateInMain();
+
+                // Si hay alguna URI pendiente para reproducir
+                if (mPendingSpotifyUri != null) {
+                    String uriToPlay = mPendingSpotifyUri;
+                    mPendingSpotifyUri = null;
+                    // Usar el manager para reproducir
+                    if (playlistManager != null) {
+                        playlistManager.playUri(uriToPlay);
+                    } else {
+                        mSpotifyAppRemote.getPlayerApi().play(uriToPlay);
+                    }
+                }
             }
 
             @Override
             public void onFailure(Throwable throwable) {
                 Log.e(TAG, "❌ Error al conectar App Remote: " + throwable.getMessage(), throwable);
-                Toast.makeText(MainActivity.this, "App Remote falló: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    /**
-     * Suscribe la aplicación al estado de reproducción actual de Spotify.
-     * Esto actualiza la UI del mini-reproductor en tiempo real.
-     */
-    private void subscribeToPlayerState() {
+
+    // Mini Player subscription
+    private void subscribeToPlayerStateInMain() {
         if (mSpotifyAppRemote == null) return;
 
-        mSpotifyAppRemote.getPlayerApi().subscribeToPlayerState().setEventCallback(playerState -> {
-            final com.spotify.protocol.types.Track track = playerState.track;
+        if (mPlayerStateSubscription != null && !mPlayerStateSubscription.isCanceled()) {
+            mPlayerStateSubscription.cancel();
+            mPlayerStateSubscription = null;
+        }
 
-            if (track != null) {
-                // 1. Mostrar la barra si no está visible
-                if (miniPlayerBar.getVisibility() != View.VISIBLE) {
-                    miniPlayerBar.setVisibility(View.VISIBLE);
-                }
+        mPlayerStateSubscription = (Subscription<PlayerState>) mSpotifyAppRemote.getPlayerApi()
+                .subscribeToPlayerState()
+                .setEventCallback(playerState -> {
+                    currentTrack = playerState.track;
+                    isPlaying = !playerState.isPaused;
+                    updateMiniPlayerState(playerState);  // Actualiza el mini reproductor
+                })
+                .setErrorCallback(error -> Log.e(TAG, "Error PlayerState subscription: " + error.getMessage()));
+    }
 
-                // 2. Actualizar el título con el nombre de la canción y el artista
-                String artistName = track.artist.name;
-                miniPlayerTrackTitle.setText(track.name + " - " + artistName);
 
-                // 3. Actualizar el icono de Play/Pause
-                // Asume que R.drawable.play_arrow_24dp y R.drawable.pause_24dp existen
-                if (playerState.isPaused) {
-                    miniPlayerPlayPauseButton.setImageResource(R.drawable.play_arrow_24dp);
-                } else {
-                    miniPlayerPlayPauseButton.setImageResource(R.drawable.pause_24dp);
-                }
-            } else {
-                // Ocultar el mini reproductor si no hay nada sonando o la App Remote se desconecta
-                miniPlayerBar.setVisibility(View.GONE);
-            }
+
+    // Playback
+    private void togglePlayPause() {
+        if (mSpotifyAppRemote == null) return;
+        mSpotifyAppRemote.getPlayerApi().getPlayerState().setResultCallback(playerState -> {
+            if (playerState.isPaused) mSpotifyAppRemote.getPlayerApi().resume();
+            else mSpotifyAppRemote.getPlayerApi().pause();
         });
     }
 
-    /**
-     * Alterna el estado de reproducción (Play/Pause) usando App Remote.
-     */
-    private void togglePlayPause() {
+    // Este método debe delegar la reproducción al PlaylistManager
+    public void playSpotifyUri(String uri) {
         if (mSpotifyAppRemote == null) {
-            Toast.makeText(this, "App Remote no conectado.", Toast.LENGTH_SHORT).show();
+            // La lógica de reconexión debe quedarse aquí en MainActivity
+            mPendingSpotifyUri = uri;
+            connectSpotifyRemote(false);
             return;
         }
 
-        // Obtener el estado actual y alternar la acción
-        mSpotifyAppRemote.getPlayerApi().getPlayerState().setResultCallback(playerState -> {
-            if (playerState.isPaused) {
-                mSpotifyAppRemote.getPlayerApi().resume();
-            } else {
-                mSpotifyAppRemote.getPlayerApi().pause();
-            }
-        });
-    }
-
-    public void playSongFromFragment(int songResourceId) {
-        String spotifyUri = mapResourceIdToUri(songResourceId);
-
-        if (mSpotifyAppRemote != null && spotifyUri != null) {
-            playSpotifyUri(spotifyUri);
-        } else if (mSpotifyAppRemote == null) {
-            Log.e(TAG, "❌ App Remote no está conectado. No se puede iniciar la reproducción.");
-            Toast.makeText(this, "Conéctate a Spotify primero.", Toast.LENGTH_SHORT).show();
-            connectSpotifyRemote(false);
+        // 💡 CAMBIO CLAVE: Usar el PlaylistManager para iniciar la reproducción.
+        // Esto es vital si quieres que el Manager actualice su estado interno (index, etc.).
+        if (playlistManager != null) {
+            playlistManager.playUri(uri);
+        } else {
+            // Fallback si por alguna razón el manager es null
+            mSpotifyAppRemote.getPlayerApi().play(uri)
+                    .setResultCallback(empty -> Log.d(TAG, "✅ Reproducción iniciada con URI: " + uri))
+                    .setErrorCallback(error -> Log.e(TAG, "❌ Fallo al reproducir: " + error.getMessage()));
         }
-    }
-
-    private void playSpotifyUri(String uri) {
-        mSpotifyAppRemote.getPlayerApi()
-                .play(uri)
-                .setResultCallback(emptyResult -> {
-                    Log.d(TAG, "✅ Reproducción iniciada con URI: " + uri);
-                    Toast.makeText(this, "Reproduciendo en Spotify", Toast.LENGTH_SHORT).show();
-                })
-                .setErrorCallback(throwable -> {
-                    Log.e(TAG, "❌ Fallo al iniciar la reproducción: " + throwable.getMessage());
-                    Toast.makeText(this, "Error al reproducir: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
-                });
-    }
-
-    private String mapResourceIdToUri(int id) {
-        if (id == 0) {
-            return "spotify:track:4cOdK2wGQHdAY5BVfeGDFi"; // Rick Astley - Never Gonna Give You Up
-        }
-        Log.w(TAG, "⚠️ ID de recurso no mapeado. Usando valor por defecto.");
-        return "spotify:playlist:37i9dQZF1DXcBWIGoYBM5M";
     }
 
     public static SpotifyAppRemote getSpotifyAppRemote() {
