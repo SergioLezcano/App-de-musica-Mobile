@@ -112,7 +112,7 @@ public class ThirdActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String trackName = intent.getStringExtra("TRACK_NAME");
         String artistName = intent.getStringExtra("ARTIST_NAME");
-        String trackUri = intent.getStringExtra("TRACK_URI");
+        //String trackUri = intent.getStringExtra("TRACK_URI");
         //boolean isPlaying = intent.getBooleanExtra("IS_PLAYING", false);
 
         // --- Actualizar la UI con los datos de la canción ---
@@ -183,8 +183,7 @@ public class ThirdActivity extends AppCompatActivity {
 
     // ========================================
     // PLAYERSTATE & UI
-    // ========================================
-    // ThirdActivity.java
+    // =======================================
 
     private void subscribeToPlayerState() {
         unsubscribePlayerState();
@@ -215,7 +214,7 @@ public class ThirdActivity extends AppCompatActivity {
         }
     }
 
-    // ThirdActivity.java
+    //Metodo para cancelar la suscripcion
 
     private void unsubscribePlayerState() {
         // 1. Verificar si la suscripción existe y NO está cancelada.
@@ -254,21 +253,6 @@ public class ThirdActivity extends AppCompatActivity {
         // ✅ Actualización del botón play/pause
         int playPauseRes = playerState.isPaused ? R.drawable.play_arrow_24dp : R.drawable.pause_24dp;
         playPauseButton.setImageResource(playPauseRes);
-
-        // 3. 🚀 LÓGICA CLAVE: Actualizar el Ícono de Repetir
-        int repeatMode = playerState.playbackOptions.repeatMode;
-        int repeatIconResId;
-
-        if (repeatMode == Repeat.ALL) {
-            repeatIconResId = R.drawable.repeat_24dp; // Ícono para repetir toda la playlist
-        } else if (repeatMode == Repeat.ONE) {
-            repeatIconResId = R.drawable.repeat_one_24dp; // Ícono para repetir una sola canción
-        } else { // Repeat.OFF
-            repeatIconResId = R.drawable.repeat_off; // Ícono para repetición desactivada
-        }
-
-        // Asignar el recurso al botón de repetición
-        repeatButton.setImageResource(repeatIconResId);
 
         Glide.with(this)
                 .load(track.imageUri.toString())
@@ -309,23 +293,6 @@ public class ThirdActivity extends AppCompatActivity {
     // ========================================
     // PLAYBACK CONTROLS
     // ========================================
-    private void togglePlayPause() {
-        if (MainActivity.playlistManager != null) {
-            MainActivity.playlistManager.togglePlayPause();
-        }
-    }
-
-    private void playNext() {
-        if (MainActivity.playlistManager != null) {
-            MainActivity.playlistManager.playNext();
-        }
-    }
-
-    private void playPrevious() {
-        if (MainActivity.playlistManager != null) {
-            MainActivity.playlistManager.playPrevious();
-        }
-    }
 
     private void toggleRepeat() {
         if (MainActivity.playlistManager == null) {
@@ -333,37 +300,11 @@ public class ThirdActivity extends AppCompatActivity {
             return;
         }
 
-        // 1. Delegar la acción al Manager
         MainActivity.playlistManager.toggleRepeat();
+        Toast.makeText(this, "Canción reiniciada", Toast.LENGTH_SHORT).show();
 
-        // 2. Opcional: Forzar una actualización de la UI después de un breve retraso
-        //    para asegurar que el PlayerState refleje el cambio
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            SpotifyAppRemote remote = MainActivity.getSpotifyAppRemote();
-            if (remote != null) {
-                // Esto dispara updateUI() y genera el Toast
-                remote.getPlayerApi().getPlayerState().setResultCallback(playerState -> {
-                    // Aquí podrías agregar el Toast basándote en playerState.playbackOptions.repeatMode
-                    String toastMessage = getRepeatToastMessage(playerState.playbackOptions.repeatMode);
-                    Toast.makeText(this, toastMessage, Toast.LENGTH_SHORT).show();
-
-                    // La función updateUI ya manejará el cambio de ícono
-                    updateUI(playerState);
-                });
-            }
-        }, 100); // Pequeño retraso para dar tiempo a Spotify a procesar el comando
     }
 
-    // 💡 Nuevo método de utilidad para mostrar el mensaje
-    private String getRepeatToastMessage(int repeatMode) {
-        if (repeatMode == Repeat.ALL) {
-            return "Repetir playlist";
-        } else if (repeatMode == Repeat.ONE) {
-            return "Repetir canción";
-        } else {
-            return "Repetir desactivado";
-        }
-    }
 
     private void stopPlayback() {
         // Usar la referencia estática para pausar

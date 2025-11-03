@@ -163,30 +163,35 @@ public class PlaylistManager {
 
     public void toggleRepeat() {
         if (spotifyAppRemote == null) {
-            Log.e(TAG, "❌ SpotifyAppRemote no conectado para alternar la repetición.");
+            Log.e(TAG, "❌ SpotifyAppRemote no conectado para reiniciar la canción.");
             return;
         }
 
         spotifyAppRemote.getPlayerApi().getPlayerState().setResultCallback(playerState -> {
-            int nextRepeatMode;
 
-            // Ciclo: ALL (playlist) -> ONE (canción) -> OFF (desactivado)
-            if (playerState.playbackOptions.repeatMode == Repeat.ALL) {
-                nextRepeatMode = Repeat.ONE;
-            } else if (playerState.playbackOptions.repeatMode == Repeat.ONE) {
-                nextRepeatMode = Repeat.OFF;
-            } else {
-                nextRepeatMode = Repeat.ALL;
+            if (playerState.track == null) {
+                Log.w(TAG, "No hay pista en reproducción para reiniciar.");
+                return;
             }
 
-            // Ejecutar la acción en Spotify
-            spotifyAppRemote.getPlayerApi().setRepeat(nextRepeatMode)
+            // 1. Asegurar que el modo Repeat de Spotify esté DESACTIVADO para evitar el conflicto de contexto.
+            // Si el usuario activa el modo 'Repeat.ONE' a través de otra aplicación, esto lo deshace.
+            spotifyAppRemote.getPlayerApi().setRepeat(Repeat.OFF)
                     .setResultCallback(empty -> {
-                        Log.d(TAG, "✅ Modo de repetición cambiado a: " + nextRepeatMode);
-                        // NOTA: La ThirdActivity se encargará del Toast.
+                        Log.d(TAG, "✅ Modo de repetición de Spotify desactivado (OFF).");
                     })
                     .setErrorCallback(throwable -> {
-                        Log.e(TAG, "❌ Error al establecer el modo de repetición: " + throwable.getMessage());
+                        Log.e(TAG, "❌ Error al desactivar el modo de repetición: " + throwable.getMessage());
+                    });
+
+
+            // 2. Enviar la orden de buscar al inicio (0 milisegundos)
+            spotifyAppRemote.getPlayerApi().seekTo(0)
+                    .setResultCallback(empty -> {
+                        Log.d(TAG, "✅ Canción reiniciada: " + playerState.track.name);
+                    })
+                    .setErrorCallback(throwable -> {
+                        Log.e(TAG, "❌ Error al intentar reiniciar la canción: " + throwable.getMessage());
                     });
         });
     }
