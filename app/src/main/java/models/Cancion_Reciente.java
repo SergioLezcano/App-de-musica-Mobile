@@ -1,7 +1,5 @@
 package models;
 
-import com.example.appmusic_basico.R;
-
 public class Cancion_Reciente {
     private String titulo;
     private String artistaName;

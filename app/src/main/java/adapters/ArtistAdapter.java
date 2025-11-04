@@ -14,66 +14,57 @@ import com.example.appmusic_basico.R;
 import java.util.List;
 
 import models.Artistas;
+import com.bumptech.glide.Glide;
 
-public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistaViewHolder> {
+public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistViewHolder> {
 
-    private final List<Artistas> artistas;
-    private final OnItemClickListener listener;
+    private final List<Artistas> artistList;
 
-    /**
-     * Interfaz para manejar los clics desde el Fragment o Activity.
-     */
-    public interface OnItemClickListener {
-        void onItemClick(Artistas artista);
-    }
-
-    /**
-     * Constructor del Adapter.
-     */
-    public ArtistAdapter(@NonNull List<Artistas> artistas, @NonNull OnItemClickListener listener) {
-        this.artistas = artistas;
-        this.listener = listener;
-    }
-
-    /**
-     * ViewHolder: gestiona las vistas individuales y los clics.
-     */
-    public static class ArtistaViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivArtista;
-        TextView tvNombre;
-
-        public ArtistaViewHolder(@NonNull View itemView, OnItemClickListener listener, List<Artistas> artistas) {
-            super(itemView);
-            ivArtista = itemView.findViewById(R.id.iv_artist_circle_image);
-            tvNombre = itemView.findViewById(R.id.tv_artist_circle_name);
-
-            // Configurar el click del ítem
-            itemView.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION && listener != null) {
-                    listener.onItemClick(artistas.get(position));
-                }
-            });
-        }
+    public ArtistAdapter(List<Artistas> artistList) {
+        this.artistList = artistList;
     }
 
     @NonNull
     @Override
-    public ArtistaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_artist_circle, parent, false);
-        return new ArtistaViewHolder(view, listener, artistas);
+    public ArtistViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_artist_circle, parent, false);
+        return new ArtistViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ArtistaViewHolder holder, int position) {
-        Artistas artista = artistas.get(position);
-        holder.tvNombre.setText(artista.getArtista());
-        holder.ivArtista.setImageResource(artista.getImagenResourceId());
+    public void onBindViewHolder(@NonNull ArtistViewHolder holder, int position) {
+        Artistas artista = artistList.get(position);
+
+        holder.tvArtistName.setText(artista.getNombre());
+
+        // 🚀 LÓGICA DE CARGA DE IMAGEN CON GLIDE
+        if (artista.getImagenUrl() != null && !artista.getImagenUrl().isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(artista.getImagenUrl())
+                    .circleCrop() // Opcional: si quieres que las imágenes de artista sean circulares
+                    .placeholder(R.drawable.image_1034) // Placeholder mientras carga
+                    .error(R.drawable.image_2930)       // Placeholder si falla la carga
+                    .into(holder.ivArtista);
+        } else {
+            // Si no hay URL (es null o está vacío), usa solo el placeholder
+            holder.ivArtista.setImageResource(R.drawable.image_1034);
+        }
+        holder.tvArtistName.setText(artista.getNombre());
+        // Opcional: Agregar un OnClickListener para reproducir música del artista
     }
 
     @Override
     public int getItemCount() {
-        return artistas != null ? artistas.size() : 0;
+        return artistList.size();
+    }
+
+    public static class ArtistViewHolder extends RecyclerView.ViewHolder {
+        TextView tvArtistName;
+        ImageView ivArtista;
+        public ArtistViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvArtistName = itemView.findViewById(R.id.tv_artist_circle_name);
+            ivArtista = itemView.findViewById(R.id.iv_artist_circle_image);
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.appmusic_basico;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,19 +17,33 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 
+
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.example.appmusic_basico.api.RetrofitClient;
+import com.example.appmusic_basico.api.SpotifyArtistSearchResponse;
+import com.example.appmusic_basico.api.SpotifyService;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 import com.spotify.protocol.client.Subscription;
 import com.spotify.protocol.types.PlayerState;
-import com.spotify.protocol.types.Repeat;
 import com.spotify.protocol.types.Track;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
+import models.Artistas;
+import models.SpotifyArtistDetailsResponse;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class ThirdActivity extends AppCompatActivity {
 
     private static final String TAG = "ThirdActivity";
-
+    private final Gson gson = new Gson();
     private ImageButton playPauseButton, skipNextButton, skipPrevButton;
     private ImageButton minimizeButton, repeatButton, stopButton, moreVertButton;
     private SeekBar seekBar;
@@ -39,8 +54,10 @@ public class ThirdActivity extends AppCompatActivity {
     private Subscription<PlayerState> mPlayerStateSubscription;
     private boolean isSeeking = false;
     private final Handler handler = new Handler(Looper.getMainLooper());
-
     private Runnable seekBarUpdateRunnable;
+    private String currentAlbumImageUrl = "";
+    private String currentArtistSpotifyId = "";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -254,11 +271,44 @@ public class ThirdActivity extends AppCompatActivity {
         int playPauseRes = playerState.isPaused ? R.drawable.play_arrow_24dp : R.drawable.pause_24dp;
         playPauseButton.setImageResource(playPauseRes);
 
-        Glide.with(this)
-                .load(track.imageUri.toString())
-                .placeholder(R.drawable.ic_launcher_background)
-                .transition(DrawableTransitionOptions.withCrossFade())
-                .into(ivAlbumArt);
+
+        if (track.imageUri != null) {
+
+            currentArtistSpotifyId = track.artist.uri != null
+                    ? track.artist.uri.replace("spotify:artist:", "")
+                    : "";
+
+            // 1. OBTENER LA URL: Usar el servicio de imágenes de Spotify para obtener una URL válida
+            spotifyAppRemote.getImagesApi()
+                    .getImage(track.imageUri) // Usamos el objeto Uri, no el String
+                    .setResultCallback(bitmap -> {
+                        // 2. ALMACENAR LA URL: Aunque aquí recibimos un Bitmap, la URL válida ya se usó.
+                        // Para guardar la URL en currentAlbumImageUrl, usaremos el URI original,
+                        // pero lo validamos a través del proceso de carga.
+
+                        // La forma más limpia es usar la propia URI, pero pasar por un proxy HTTPS.
+                        // Como workaround, guardaremos el URI completo para la función de Favoritos:
+                        this.currentAlbumImageUrl = "";
+
+                        // 3. CARGAR LA IMAGEN: Glide puede necesitar un "Loader" personalizado,
+                        // pero si usas el método getImage() y lo cargas como Bitmap, funciona:
+                        Glide.with(this)
+                                .asBitmap()
+                                .load(bitmap)
+                                .placeholder(R.drawable.ic_launcher_background)
+                                .into(ivAlbumArt);
+
+                    })
+                    .setErrorCallback(throwable -> {
+                        Log.e(TAG, "❌ Error al cargar imagen del álbum: " + throwable.getMessage());
+                        // Si falla, usamos el placeholder y un URI vacío para favoritos
+                        this.currentAlbumImageUrl = "";
+                        ivAlbumArt.setImageResource(R.drawable.ic_launcher_background);
+                    });
+        } else {
+            this.currentAlbumImageUrl = "";
+            ivAlbumArt.setImageResource(R.drawable.ic_launcher_background);
+        }
 
         long duration = track.duration;
         seekBar.setMax((int) duration);
@@ -372,7 +422,17 @@ public class ThirdActivity extends AppCompatActivity {
     private boolean handleMenuItemSelection(MenuItem item) {
         String msg;
         int id = item.getItemId();
-        if (id == R.id.opcion_favoritos) msg = "Favorito";
+        if (id == R.id.opcion_favoritos) {
+            String currentArtistName = tvArtistName.getText().toString();
+            String currentArtistImageUrl = currentAlbumImageUrl;
+            String currentArtistId = currentArtistSpotifyId;
+
+
+            Artistas newFavorite = new Artistas(currentArtistName, currentArtistImageUrl, currentArtistId);
+            toggleFavoriteArtist(newFavorite);
+            return true;
+        }
+
         else if (id == R.id.opcion_play_list) msg = "Agregar a Playlist";
         else if (id == R.id.opcion_fila) msg = "Agregar a la fila";
         else if (id == R.id.opcion_album) msg = "Ver álbum";
@@ -383,6 +443,92 @@ public class ThirdActivity extends AppCompatActivity {
 
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         return true;
+    }
+
+    private String getArtistImageUrlFromSubscription() {
+        return this.currentAlbumImageUrl != null ? this.currentAlbumImageUrl : "";
+    }
+
+    // Método de Guardado para artistas favoritos
+
+    private void toggleFavoriteArtist(Artistas artista) {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        Gson gson = new Gson();
+
+        // Leer lista actual
+        String json = prefs.getString("favorite_artists_json", "[]");
+        Type type = new TypeToken<List<Artistas>>() {}.getType();
+        List<Artistas> favoritos = gson.fromJson(json, type);
+        if (favoritos == null) favoritos = new ArrayList<>();
+
+        // Buscar si ya está
+        boolean exists = false;
+        for (Artistas a : favoritos) {
+            if (a.getNombre().equalsIgnoreCase(artista.getNombre())) {
+                exists = true;
+                favoritos.remove(a);
+                Toast.makeText(this, artista.getNombre() + " eliminado de favoritos", Toast.LENGTH_SHORT).show();
+                break;
+            }
+        }
+
+        if (!exists) {
+            favoritos.add(artista);
+            Toast.makeText(this, artista.getNombre() + " agregado a favoritos", Toast.LENGTH_SHORT).show();
+
+            // 🚀 Obtener imagen real de Spotify usando searchArtists
+            if ((artista.getImagenUrl() == null || artista.getImagenUrl().isEmpty())
+                    && MainActivity.spotifyAccessToken != null) {
+
+                SpotifyService api = RetrofitClient.getClient().create(SpotifyService.class);
+                List<Artistas> finalFavoritos = favoritos;
+                api.searchArtists("Bearer " + MainActivity.spotifyAccessToken, artista.getNombre().trim(), "artist")
+                        .enqueue(new retrofit2.Callback<SpotifyArtistSearchResponse>() {
+                            @Override
+                            public void onResponse(retrofit2.Call<SpotifyArtistSearchResponse> call,
+                                                   retrofit2.Response<SpotifyArtistSearchResponse> response) {
+                                if (response.isSuccessful() && response.body() != null
+                                        && response.body().getArtists() != null
+                                        && !response.body().getArtists().getItems().isEmpty()) {
+
+                                    SpotifyArtistSearchResponse.Item firstArtist =
+                                            response.body().getArtists().getItems().get(0);
+
+                                    if (firstArtist.getImages() != null && !firstArtist.getImages().isEmpty()) {
+                                        String imageUrl = firstArtist.getImages().get(0).getUrl();
+                                        artista.setImagenUrl(imageUrl);
+
+                                        prefs.edit().putString("favorite_artists_json", gson.toJson(finalFavoritos)).apply();
+
+                                        // Notificar a FragmentHome para refrescar RecyclerView
+                                        Intent intent = new Intent("ARTIST_FAVORITE_UPDATE");
+                                        sendBroadcast(intent);
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(retrofit2.Call<SpotifyArtistSearchResponse> call, Throwable t) {
+                                Log.e(TAG, "❌ Error al obtener imagen de artista: " + artista.getNombre() + " → " + t.getMessage());
+                            }
+                        });
+            }
+        } else {
+            // Guardar cambios si se eliminó un artista
+            prefs.edit().putString("favorite_artists_json", gson.toJson(favoritos)).apply();
+            // Enviar broadcast para actualizar FragmentHome
+            Intent intent = new Intent("ARTIST_FAVORITE_UPDATE");
+            sendBroadcast(intent);
+        }
+    }
+
+
+    /**
+     * Método auxiliar para notificar a FragmentHome que debe recargar la lista de favoritos.
+     */
+    private void notifyFragmentHomeOfUpdate() {
+        Intent intent = new Intent("ARTIST_FAVORITE_UPDATE");
+        sendBroadcast(intent);
     }
 
 }

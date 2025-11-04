@@ -1,16 +1,24 @@
 package com.example.appmusic_basico.api;
 
-import models.Cancion_Reciente;
-import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.Query;
 
+// 🚀 Interfaz para las llamadas a la API Web de Spotify
 public interface SpotifyService {
-    //Endpoint de Spotify: GET https://api.spotify.com/v1/me/player/recently-played
-    @GET("me/player/recently-played?limit=10")
+
+    // Obtener canciones reproducidas recientemente
+    @GET("me/player/recently-played?limit=20")
     Call<SpotifyRecentlyPlayedResponse> getRecentlyPlayed(
             @Header("Authorization") String authHeader
     );
-}
 
+    // Buscar artistas por nombre
+    @GET("search")
+    Call<SpotifyArtistSearchResponse> searchArtists(
+            @Header("Authorization") String authHeader,
+            @Query("q") String query,
+            @Query("type") String type
+    );
+}
