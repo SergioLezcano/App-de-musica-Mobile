@@ -2,9 +2,12 @@ package com.example.appmusic_basico;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -13,121 +16,164 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.example.appmusic_basico.api.RetrofitClient;
+import com.example.appmusic_basico.api.SpotifyArtistTopTracksResponse;
+import com.example.appmusic_basico.api.SpotifyService;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import adapters.SongListAdapter;
+import models.Cancion_Reciente;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class SecondaryActivity extends AppCompatActivity {
 
     private SpotifyAppRemote mSpotifyAppRemote;
+    private RecyclerView rvSongList;
+    private SongListAdapter songListAdapter;
+
+    private ImageView imgArtist;
+    private TextView tvArtistName;
+    private TextView tvArtistTitle;
+
+    private String artistId;
+    private String artistName;
+    private String artistImage;
+
+    private List<Cancion_Reciente> topTracks = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.music_list);
 
-        // --- Views ---
+        // === Obtener vistas ===
         ImageButton backButton = findViewById(R.id.btn_back);
         FrameLayout playButtonLayout = findViewById(R.id.play_button_layout);
-        ImageView cover = findViewById(R.id.img_artist);
-        TextView title = findViewById(R.id.tv_title_cancion);
-        TextView artist = findViewById(R.id.tv_artist_name);
+        imgArtist = findViewById(R.id.img_artist);
+        tvArtistTitle = findViewById(R.id.tv_title_cancion);
+        tvArtistName = findViewById(R.id.tv_artist_name);
+        rvSongList = findViewById(R.id.cv_container_song_list);
 
-        // --- Intent Data ---
+        // === Configurar RecyclerView ===
+        rvSongList.setLayoutManager(new LinearLayoutManager(this));
+        songListAdapter = new SongListAdapter(topTracks, this::onSongClicked);
+        rvSongList.setAdapter(songListAdapter);
+
+        // === Obtener datos enviados desde el fragment o adapter ===
         Intent intent = getIntent();
-        int songResourceId;
-        String songTitle = "";
-        String songArtist = "";
-        int songImage = 0;
-
         if (intent != null) {
-            songTitle = intent.getStringExtra("SONG_TITLE");
-            songArtist = intent.getStringExtra("SONG_ARTIST");
-            songImage = intent.getIntExtra("SONG_IMAGE", 0);
-            songResourceId = intent.getIntExtra("SONG_RESOURCE_ID", 0);
-
-            if (title != null) title.setText(songTitle);
-            if (artist != null) artist.setText(songArtist);
-            if (cover != null && songImage != 0) cover.setImageResource(songImage);
-        } else {
-            songResourceId = 0;
+            artistId = intent.getStringExtra("ARTIST_ID");
+            artistName = intent.getStringExtra("ARTIST_NAME");
+            artistImage = intent.getStringExtra("ARTIST_IMAGE");
         }
 
-        // --- Back button ---
+        // Mostrar datos en UI
+        tvArtistName.setText(artistName);
+        tvArtistTitle.setText("Top Canciones");
+
+        Glide.with(this)
+                .load(artistImage)
+                .placeholder(R.drawable.image_2930)
+                .into(imgArtist);
+
+        // Botón volver
         backButton.setOnClickListener(v -> finish());
 
-        // --- Play button ---
+        // Botón Play (opcional: reproducir primera canción del artista)
         playButtonLayout.setOnClickListener(v -> {
-            // Obtener conexión a Spotify
-            mSpotifyAppRemote = MainActivity.getSpotifyAppRemote();
-
-            if (mSpotifyAppRemote != null) {
-                // Actualizar índice y estado global
-                int songIndex = findSongIndexByUri(String.valueOf(songResourceId));
-                MainActivity.currentSongIndex = songIndex;
-                MainActivity.isMusicPlaying = true;
-
-                // Obtener URI de la canción
-                String spotifyUri = MainActivity.playlistUris.get(songIndex);
-
-                // Reproducir la canción con callbacks
-                mSpotifyAppRemote.getPlayerApi().play(spotifyUri)
-                        .setResultCallback(empty -> {
-                            Toast.makeText(this, "Reproduciendo: " + title, Toast.LENGTH_SHORT).show();
-                            // Abrir ThirdActivity solo después de que la reproducción inicia
-                            Intent playIntent = new Intent(SecondaryActivity.this, ThirdActivity.class);
-                            startActivity(playIntent);
-                        })
-                        .setErrorCallback(error -> {
-                            Toast.makeText(this, "Error al reproducir canción", Toast.LENGTH_SHORT).show();
-                            android.util.Log.e("SecondaryActivity", "Error al reproducir: " + String.valueOf(error));
-                        });
-
-            } else {
-                Toast.makeText(this, "Spotify no conectado", Toast.LENGTH_SHORT).show();
+            if (!topTracks.isEmpty()) {
+                playSong(topTracks.get(0).getSpotifyUri());
             }
         });
 
-        // --- Menú opciones ---
-        int[] moreButtons = {R.id.iv_more_vertical_1, R.id.iv_more_vertical_2, R.id.iv_more_vertical_3};
-        for (int btnId : moreButtons) {
-            ImageButton btn = findViewById(btnId);
-            btn.setOnClickListener(this::showPopupMenu);
-        }
+        // Cargar top tracks desde Spotify API
+        loadArtistTopTracks();
     }
 
-    // Encuentra la posición de la canción en la playlist global
-    private int findSongIndexByUri(String spotifyUri) {
-        for (int i = 0; i < MainActivity.globalPlaylist.size(); i++) {
-            if (spotifyUri.equals(MainActivity.globalPlaylist.get(i).getSpotifyUri())) {
-                return i;
+    // ===========================================================================================
+    // ✅ CARGAR TOP TRACKS DEL ARTISTA DESDE SPOTIFY WEB API
+    // ===========================================================================================
+    private void loadArtistTopTracks() {
+
+        if (MainActivity.spotifyAccessToken == null) {
+            Toast.makeText(this, "Token no disponible.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        SpotifyService api = RetrofitClient.getClient().create(SpotifyService.class);
+
+        api.getArtistTopTracks(
+                "Bearer " + MainActivity.spotifyAccessToken,
+                artistId,
+                "AR" // país
+        ).enqueue(new Callback<SpotifyArtistTopTracksResponse>() {
+            @Override
+            public void onResponse(Call<SpotifyArtistTopTracksResponse> call,
+                                   Response<SpotifyArtistTopTracksResponse> response) {
+
+                if (!response.isSuccessful() || response.body() == null) {
+                    Log.e("SecondaryActivity", "Error API Spotify: " + response.code());
+                    return;
+                }
+
+                topTracks.clear();
+
+                for (SpotifyArtistTopTracksResponse.Track t : response.body().getTracks()) {
+
+                    String image = "";
+                    if (t.getAlbum() != null && t.getAlbum().getImages() != null && !t.getAlbum().getImages().isEmpty()) {
+                        image = t.getAlbum().getImages().get(0).getUrl();
+                    }
+
+                    topTracks.add(new Cancion_Reciente(
+                            t.getName(),
+                            t.getArtists().get(0).getName(),
+                            image,
+                            t.getUri(),
+                            true
+                    ));
+                }
+
+                songListAdapter.notifyDataSetChanged();
             }
+
+            @Override
+            public void onFailure(Call<SpotifyArtistTopTracksResponse> call, Throwable t) {
+                Log.e("SecondaryActivity", "Error: " + t.getMessage());
+            }
+        });
+    }
+
+    // ===========================================================================================
+    // ✅ AL HACER CLICK EN UNA CANCION
+    // ===========================================================================================
+    private void onSongClicked(Cancion_Reciente cancion) {
+        playSong(cancion.getSpotifyUri());
+    }
+
+    // ===========================================================================================
+    // ✅ REPRODUCIR UNA CANCION USANDO MAINACTIVITY (PLAYLISTMANAGER)
+    // ===========================================================================================
+    private void playSong(String uri) {
+        mSpotifyAppRemote = MainActivity.getSpotifyAppRemote();
+
+        if (mSpotifyAppRemote == null) {
+            Toast.makeText(this, "Spotify no conectado", Toast.LENGTH_SHORT).show();
+            return;
         }
-        return 0;
+
+        MainActivity.playlistManager.playUri(uri);
+
+        // Abrir ThirdActivity
+        Intent playIntent = new Intent(this, ThirdActivity.class);
+        startActivity(playIntent);
     }
-
-
-    // Menú Popup centralizado
-    private void showPopupMenu(View view) {
-        PopupMenu popup = new PopupMenu(this, view);
-        popup.getMenuInflater().inflate(R.menu.menu_opciones_music_list, popup.getMenu());
-        popup.setOnMenuItemClickListener(this::handleMenuItemSelection);
-        popup.show();
-    }
-
-    private boolean handleMenuItemSelection(MenuItem item) {
-        int id = item.getItemId();
-        String msg = "";
-
-        if (id == R.id.opcion_reproducir) msg = "Reproducir música";
-        else if (id == R.id.opcion_agregar_favoritos) msg = "Agregar a favoritos";
-        else if (id == R.id.opcion_agregar_a_lista) msg = "Agregar a la lista";
-        else if (id == R.id.opcion_ocultar) msg = "Ocultar";
-        else return false;
-
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-        return true;
-    }
-
-
 }
 
 

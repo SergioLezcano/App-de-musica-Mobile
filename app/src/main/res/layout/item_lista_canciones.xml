@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <!-- Imagen del álbum / artista -->
+    <ImageView
+        android:id="@+id/iv_cancion_cover"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:src="@drawable/image_1034" />
+
+    <!-- Contenedor de títulos -->
+    <LinearLayout
+        android:id="@+id/ll_container_textView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        app:layout_constraintStart_toEndOf="@id/iv_cancion_cover"
+        app:layout_constraintTop_toTopOf="@id/iv_cancion_cover"
+        app:layout_constraintBottom_toBottomOf="@id/iv_cancion_cover"
+        app:layout_constraintEnd_toStartOf="@id/ic_moreV_container">
+
+        <TextView
+            android:id="@+id/tv_cancion_titulo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            tools:text="Título de la canción" />
+
+        <TextView
+            android:id="@+id/tv_cancion_artista"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/back_button_color"
+            android:textSize="14sp"
+            tools:text="Artista" />
+
+    </LinearLayout>
+
+    <!-- Botón de opciones -->
+    <FrameLayout
+        android:id="@+id/ic_moreV_container"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/iv_cancion_cover"
+        app:layout_constraintBottom_toBottomOf="@id/iv_cancion_cover">
+
+        <ImageButton
+            android:id="@+id/iv_more_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_rounded_image"
+            android:padding="12dp"
+            android:src="@drawable/more_vert_24dp"
+            android:contentDescription="Menú de opciones"
+            app:tint="@color/white"
+            tools:ignore="MissingOnClick" />
+
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
