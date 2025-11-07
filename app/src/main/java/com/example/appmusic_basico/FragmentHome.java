@@ -123,6 +123,9 @@ public class FragmentHome extends Fragment {
                 filter,
                 ContextCompat.RECEIVER_NOT_EXPORTED
         );
+
+        registerRecentSongsReceiver();
+
     }
 
     @Override
@@ -300,6 +303,26 @@ public class FragmentHome extends Fragment {
         prefs.edit().putString("favorite_artists_json", gson.toJson(favoriteArtists)).apply();
     }
 
+    private void registerRecentSongsReceiver() {
+        BroadcastReceiver recentReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                cancionesRecientes.clear();
+                cancionesRecientes.addAll(MainActivity.globalPlaylist);
+
+                adapter.notifyDataSetChanged();
+            }
+        };
+
+        IntentFilter filter = new IntentFilter("UPDATE_RECENTLY_PLAYED");
+        ContextCompat.registerReceiver(
+                requireContext(),
+                recentReceiver,
+                filter,
+                ContextCompat.RECEIVER_NOT_EXPORTED
+        );
+    }
 
 
 }

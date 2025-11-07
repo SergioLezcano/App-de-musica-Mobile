@@ -163,12 +163,15 @@ public class SecondaryActivity extends AppCompatActivity {
         // Botón Play (opcional: reproducir primera canción del artista)
         playButtonLayout.setOnClickListener(v -> {
             if (!topTracks.isEmpty()) {
-                playSong(topTracks.get(0).getSpotifyUri());
+                playSong(topTracks.get(0));
+
             }
         });
 
         // Cargar top tracks desde Spotify API
         loadArtistTopTracks();
+
+        showMiniPlayer();
     }
 
     // ===========================================================================================
@@ -229,51 +232,54 @@ public class SecondaryActivity extends AppCompatActivity {
     // ✅ AL HACER CLICK EN UNA CANCION
     // ===========================================================================================
     private void onSongClicked(Cancion_Reciente cancion) {
-        playSong(cancion.getSpotifyUri());
+        playSong(cancion);
     }
 
     // ===========================================================================================
     // ✅ REPRODUCIR UNA CANCION USANDO MAINACTIVITY (PLAYLISTMANAGER)
     // ===========================================================================================
-    private void playSong(String uri) {
-        mSpotifyAppRemote = MainActivity.getSpotifyAppRemote();
+    private void playSong(Cancion_Reciente c) {
 
-        if (mSpotifyAppRemote == null) {
+        if (c == null) return;
+
+        SpotifyAppRemote remote = MainActivity.getSpotifyAppRemote();
+        if (remote == null) {
             Toast.makeText(this, "Spotify no conectado", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Reproducir canción
-        MainActivity.playlistManager.playUri(uri);
+        // ✅ Agregar a recientes automáticamente
+        addToLocalRecents(c);
 
-        // Actualizar mini-player
+        // ✅ Reproducir
+        MainActivity.playlistManager.playUri(c.getSpotifyUri());
         showMiniPlayer();
     }
 
+
     private void showMiniPlayer() {
-        View mini = findViewById(R.id.mini_player_bar);
-        TextView miniTitle = findViewById(R.id.mini_player_track_title);
-        ImageButton miniPlayPause = findViewById(R.id.mini_player_play_pause);
+        View miniBar = findViewById(R.id.mini_player_bar);
+        TextView title = findViewById(R.id.mini_player_track_title);
+        ImageButton playPause = findViewById(R.id.mini_player_play_pause);
+
+        miniBar.setVisibility(View.VISIBLE);
 
         SpotifyAppRemote remote = MainActivity.getSpotifyAppRemote();
-        if (remote == null) return;
+        if (remote != null) {
+            remote.getPlayerApi().getPlayerState().setResultCallback(state -> {
 
-        remote.getPlayerApi()
-                .getPlayerState()
-                .setResultCallback(state -> {
-                    if (state.track != null) {
-                        miniTitle.setText(
-                                state.track.name + " - " + state.track.artist.name
-                        );
+                if (state.track != null) {
+                    title.setText(state.track.name + " - " + state.track.artist.name);
 
-                        miniPlayPause.setImageResource(
-                                state.isPaused ? R.drawable.play_arrow_24dp : R.drawable.pause_24dp
-                        );
+                    playPause.setImageResource(
+                            state.isPaused ? R.drawable.play_arrow_24dp : R.drawable.pause_24dp
+                    );
+                }
 
-                        mini.setVisibility(View.VISIBLE);
-                    }
-                });
+            });
+        }
     }
+
 
     private void playRandomTrack() {
 
@@ -303,6 +309,24 @@ public class SecondaryActivity extends AppCompatActivity {
         Toast.makeText(this, "Reproduciendo (aleatorio): " + randomTrack.getTitulo(), Toast.LENGTH_SHORT).show();
     }
 
+    private void addToLocalRecents(Cancion_Reciente c) {
+
+        if (c == null) return;
+
+        // Evitar duplicados por URI
+        for (Cancion_Reciente x : MainActivity.globalPlaylist) {
+            if (x.getSpotifyUri().equals(c.getSpotifyUri())) {
+                return;
+            }
+        }
+
+        // Insertar al inicio como "reciente"
+        MainActivity.globalPlaylist.add(0, c);
+
+        // Enviar broadcast interno → FragmentHome actualizará el Recycler
+        Intent intent = new Intent("UPDATE_RECENTLY_PLAYED");
+        sendBroadcast(intent);
+    }
 
 
 }

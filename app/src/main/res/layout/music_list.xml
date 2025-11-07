@@ -163,7 +163,7 @@
                 android:id="@+id/tv_title_seccion_popular"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Canciones Populares"
+                android:text="Lista de canciones"
                 android:textColor="@color/white"
                 android:textStyle="bold"
                 android:textSize="18dp"
