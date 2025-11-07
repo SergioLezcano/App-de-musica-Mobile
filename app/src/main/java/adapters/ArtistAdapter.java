@@ -1,5 +1,6 @@
 package adapters;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import java.util.List;
 
 import models.Artistas;
 import com.bumptech.glide.Glide;
+import com.example.appmusic_basico.SecondaryActivity;
 
 public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistViewHolder> {
 
@@ -49,8 +51,14 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistView
             // Si no hay URL (es null o está vacío), usa solo el placeholder
             holder.ivArtista.setImageResource(R.drawable.image_1034);
         }
-        holder.tvArtistName.setText(artista.getNombre());
-        // Opcional: Agregar un OnClickListener para reproducir música del artista
+        // ✅ CLICK → Ir a pantalla del artista
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), SecondaryActivity.class);
+            intent.putExtra("ARTIST_ID", artista.getIdSpotify());
+            intent.putExtra("ARTIST_NAME", artista.getNombre());
+            intent.putExtra("ARTIST_IMAGE", artista.getImagenUrl());
+            v.getContext().startActivity(intent);
+        });
     }
 
     @Override

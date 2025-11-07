@@ -3,6 +3,7 @@ package com.example.appmusic_basico.api;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 // 🚀 Interfaz para las llamadas a la API Web de Spotify
@@ -21,4 +22,13 @@ public interface SpotifyService {
             @Query("q") String query,
             @Query("type") String type
     );
+
+    @GET("artists/{id}/top-tracks")
+    Call<SpotifyArtistTopTracksResponse> getArtistTopTracks(
+            @Header("Authorization") String authHeader,
+            @Path("id") String artistId,
+            @Query("market") String market
+    );
+
+
 }

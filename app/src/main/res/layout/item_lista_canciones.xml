@@ -9,7 +9,7 @@
 
     <!-- Imagen del álbum / artista -->
     <ImageView
-        android:id="@+id/iv_cancion_cover"
+        android:id="@+id/iv_album_artista"
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:scaleType="centerCrop"
@@ -22,30 +22,35 @@
     <LinearLayout
         android:id="@+id/ll_container_textView"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
-        app:layout_constraintStart_toEndOf="@id/iv_cancion_cover"
-        app:layout_constraintTop_toTopOf="@id/iv_cancion_cover"
-        app:layout_constraintBottom_toBottomOf="@id/iv_cancion_cover"
-        app:layout_constraintEnd_toStartOf="@id/ic_moreV_container">
+        app:layout_constraintStart_toEndOf="@id/iv_album_artista"
+        app:layout_constraintEnd_toStartOf="@+id/ic_moreV_container"
+        app:layout_constraintTop_toTopOf="@id/iv_album_artista"
+        app:layout_constraintBottom_toBottomOf="@id/iv_album_artista">
 
         <TextView
-            android:id="@+id/tv_cancion_titulo"
+            android:id="@+id/tv_titulo_cancion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
             android:textStyle="bold"
-            android:textSize="16sp"
+            android:textSize="14sp"
+            android:textAlignment="gravity"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
             tools:text="Título de la canción" />
 
         <TextView
-            android:id="@+id/tv_cancion_artista"
+            android:id="@+id/tv_nombre_artista"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:textAlignment="textStart"
             android:textColor="@color/back_button_color"
-            android:textSize="14sp"
+            android:textSize="12sp"
             tools:text="Artista" />
 
     </LinearLayout>
@@ -56,16 +61,16 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/iv_cancion_cover"
-        app:layout_constraintBottom_toBottomOf="@id/iv_cancion_cover">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageButton
             android:id="@+id/iv_more_vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_rounded_image"
-            android:padding="12dp"
+            android:background="@drawable/bg_circule_btn_opcion"
             android:src="@drawable/more_vert_24dp"
+            android:padding="12dp"
             android:contentDescription="Menú de opciones"
             app:tint="@color/white"
             tools:ignore="MissingOnClick" />
