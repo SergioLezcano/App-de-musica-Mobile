@@ -219,12 +219,39 @@ public class SecondaryActivity extends AppCompatActivity {
             return;
         }
 
+        // Reproducir canción
         MainActivity.playlistManager.playUri(uri);
 
-        // Abrir ThirdActivity
-        Intent playIntent = new Intent(this, ThirdActivity.class);
-        startActivity(playIntent);
+        // Actualizar mini-player
+        showMiniPlayer();
     }
+
+    private void showMiniPlayer() {
+        View mini = findViewById(R.id.mini_player_bar);
+        TextView miniTitle = findViewById(R.id.mini_player_track_title);
+        ImageButton miniPlayPause = findViewById(R.id.mini_player_play_pause);
+
+        SpotifyAppRemote remote = MainActivity.getSpotifyAppRemote();
+        if (remote == null) return;
+
+        remote.getPlayerApi()
+                .getPlayerState()
+                .setResultCallback(state -> {
+                    if (state.track != null) {
+                        miniTitle.setText(
+                                state.track.name + " - " + state.track.artist.name
+                        );
+
+                        miniPlayPause.setImageResource(
+                                state.isPaused ? R.drawable.play_arrow_24dp : R.drawable.pause_24dp
+                        );
+
+                        mini.setVisibility(View.VISIBLE);
+                    }
+                });
+    }
+
+
 }
 
 
