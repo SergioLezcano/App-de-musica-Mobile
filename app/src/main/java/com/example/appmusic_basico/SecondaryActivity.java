@@ -56,6 +56,8 @@ public class SecondaryActivity extends AppCompatActivity {
         View miniPlayer = findViewById(R.id.mini_player_bar);
         TextView miniTitle = findViewById(R.id.mini_player_track_title);
         ImageButton miniPlayPause = findViewById(R.id.mini_player_play_pause);
+        ImageView bigPlayButton = findViewById(R.id.ic_play_2);
+        ImageView shuffleButton = findViewById(R.id.iv_aleatorio);
 
         // Suscripción al estado del player (igual que MainActivity)
         SpotifyAppRemote remote = MainActivity.getSpotifyAppRemote();
@@ -64,6 +66,13 @@ public class SecondaryActivity extends AppCompatActivity {
             remote.getPlayerApi()
                     .subscribeToPlayerState()
                     .setEventCallback(playerState -> {
+
+                        boolean isPaused = playerState.isPaused;
+
+                        // ✅ Sincronizar botón grande
+                        bigPlayButton.setImageResource(
+                                isPaused ? R.drawable.play_arrow_24dp : R.drawable.pause_24dp
+                        );
 
                         if (playerState.track != null) {
                             miniTitle.setText(playerState.track.name + " - " + playerState.track.artist.name);
@@ -93,6 +102,21 @@ public class SecondaryActivity extends AppCompatActivity {
             startActivity(i);
         });
 
+        bigPlayButton.setOnClickListener(v -> {
+            SpotifyAppRemote r = MainActivity.getSpotifyAppRemote();
+            if (r == null) return;
+
+            r.getPlayerApi().getPlayerState().setResultCallback(state -> {
+                if (state.isPaused) {
+                    r.getPlayerApi().resume();
+                } else {
+                    r.getPlayerApi().pause();
+                }
+            });
+        });
+
+        //Listener de btn aleatorio
+        shuffleButton.setOnClickListener(v -> playRandomTrack());
 
         // === Obtener vistas ===
         ImageButton backButton = findViewById(R.id.btn_back);
@@ -250,6 +274,35 @@ public class SecondaryActivity extends AppCompatActivity {
                     }
                 });
     }
+
+    private void playRandomTrack() {
+
+        if (topTracks == null || topTracks.isEmpty()) {
+            Toast.makeText(this, "No hay canciones para reproducir.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int randomIndex = (int) (Math.random() * topTracks.size());
+        Cancion_Reciente randomTrack = topTracks.get(randomIndex);
+
+        String uri = randomTrack.getSpotifyUri();
+
+        SpotifyAppRemote remote = MainActivity.getSpotifyAppRemote();
+        if (remote == null) {
+            Toast.makeText(this, "Spotify no conectado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // ✅ Reproducción usando PlaylistManager
+        if (MainActivity.playlistManager != null) {
+            MainActivity.playlistManager.playUri(uri);
+        } else {
+            remote.getPlayerApi().play(uri);
+        }
+
+        Toast.makeText(this, "Reproduciendo (aleatorio): " + randomTrack.getTitulo(), Toast.LENGTH_SHORT).show();
+    }
+
 
 
 }

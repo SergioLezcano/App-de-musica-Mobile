@@ -69,7 +69,7 @@
 
                 <TextView
                     android:id="@+id/tv_title_cancion"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Titulo de la canción"
                     android:orientation="vertical"
@@ -77,13 +77,16 @@
                     android:textColor="@color/white"
                     android:textSize="24dp"
                     android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent">
+                    android:background="#3F51B5"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
 
                 </TextView>
 
                 <TextView
                     android:id="@+id/tv_artist_name"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="32dp"
                     android:orientation="vertical"
@@ -92,8 +95,10 @@
                     android:textColor="@color/nav_active"
                     android:textSize="20dp"
                     android:textStyle="bold"
+                    android:background="#3F51B5"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    tools:layout_editor_absoluteX="4dp">
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
 
                 </TextView>
 
