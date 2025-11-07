@@ -91,24 +91,33 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         bottomNavigationView = findViewById(R.id.bottom_navigation_bar);
         bottomNavigationView.setOnItemSelectedListener(this::onNavigationItemSelected);
 
-        // Mini Player
+        // Logs de sanity
+        Log.e("DEBUG_LAYOUT", "Post-setContentView reached");
+
+        // Tomar directamente las vistas del mini player
         miniPlayerBar = findViewById(R.id.mini_player_bar);
         miniPlayerTrackTitle = findViewById(R.id.mini_player_track_title);
         miniPlayerPlayPauseButton = findViewById(R.id.mini_player_play_pause);
 
-        miniPlayerPlayPauseButton.setOnClickListener(v -> togglePlayPause());
+        // Validaciones para no crashear si alguna variante de layout no lo tiene
+        if (miniPlayerBar == null || miniPlayerTrackTitle == null || miniPlayerPlayPauseButton == null) {
+            Log.e("DEBUG_LAYOUT", "❌ mini player views NOT found in this layout variant");
+        } else {
+            Log.e("DEBUG_LAYOUT", "✅ mini player views OK");
 
-        miniPlayerBar.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ThirdActivity.class);
+            miniPlayerPlayPauseButton.setOnClickListener(v -> togglePlayPause());
 
-            // Pasa la información relevante
-            intent.putExtra("TRACK_NAME", currentTrack.name);
-            intent.putExtra("ARTIST_NAME", currentTrack.artist.name);
-            intent.putExtra("TRACK_URI", currentTrack.uri);
-            intent.putExtra("IS_PLAYING", isPlaying);  // Pasa si está pausado o no
+            miniPlayerBar.setOnClickListener(v -> {
+                if (currentTrack == null) return;
+                Intent intent = new Intent(MainActivity.this, ThirdActivity.class);
+                intent.putExtra("TRACK_NAME", currentTrack.name);
+                intent.putExtra("ARTIST_NAME", currentTrack.artist.name);
+                intent.putExtra("TRACK_URI", currentTrack.uri);
+                intent.putExtra("IS_PLAYING", isPlaying);
+                startActivity(intent);
+            });
+        }
 
-            startActivity(intent);
-        });
 
         // Autenticación Spotify
         if (spotifyAccessToken == null) {

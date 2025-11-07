@@ -9,7 +9,6 @@
     android:paddingTop="12dp"
     tools:context=".SecondaryActivity">
 
-
     <ScrollView
         android:id="@+id/container_music_list"
         android:layout_width="match_parent"
@@ -184,5 +183,13 @@
         </LinearLayout>
 
     </ScrollView>
+
+    <include
+        layout="@layout/mini_player_bar"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

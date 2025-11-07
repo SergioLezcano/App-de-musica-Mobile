@@ -15,43 +15,19 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/mini_player_bar"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation_bar"
         android:paddingBottom="5dp"
         tools:layout="@layout/home_fragment"/>
 
     <!-- Contenedor del miniReprodcutor -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/mini_player_bar"
+    <include
+        layout="@layout/mini_player_bar"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="@color/card_dark"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation_bar">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation_bar"/>
 
-        <TextView
-            android:id="@+id/mini_player_track_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Título de la Canción"
-            android:textColor="@color/white"
-            android:textSize="14sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageButton
-            android:id="@+id/mini_player_play_pause"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@drawable/play_arrow_24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/white" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- 5. Barra de Navegación Inferior (Fija) -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -62,7 +38,6 @@
         app:itemIconTint="@color/bottom_nav_item_color"
         app:itemTextColor="@color/bottom_nav_item_color"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:menu="@menu/bottom_nav_menu"
-        tools:layout_editor_absoluteX="0dp" />
+        app:menu="@menu/bottom_nav_menu"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

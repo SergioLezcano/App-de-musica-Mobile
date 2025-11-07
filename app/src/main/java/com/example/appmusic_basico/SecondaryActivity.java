@@ -52,6 +52,48 @@ public class SecondaryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.music_list);
 
+        // Mini Player UI
+        View miniPlayer = findViewById(R.id.mini_player_bar);
+        TextView miniTitle = findViewById(R.id.mini_player_track_title);
+        ImageButton miniPlayPause = findViewById(R.id.mini_player_play_pause);
+
+        // Suscripción al estado del player (igual que MainActivity)
+        SpotifyAppRemote remote = MainActivity.getSpotifyAppRemote();
+
+        if (remote != null) {
+            remote.getPlayerApi()
+                    .subscribeToPlayerState()
+                    .setEventCallback(playerState -> {
+
+                        if (playerState.track != null) {
+                            miniTitle.setText(playerState.track.name + " - " + playerState.track.artist.name);
+                            miniPlayer.setVisibility(View.VISIBLE);
+
+                            miniPlayPause.setImageResource(
+                                    playerState.isPaused ? R.drawable.play_arrow_24dp : R.drawable.pause_24dp
+                            );
+                        }
+                    });
+        }
+
+        // Botón Play/Pause
+        miniPlayPause.setOnClickListener(v -> {
+            SpotifyAppRemote r = MainActivity.getSpotifyAppRemote();
+            if (r != null) {
+                r.getPlayerApi().getPlayerState().setResultCallback(state -> {
+                    if (state.isPaused) r.getPlayerApi().resume();
+                    else r.getPlayerApi().pause();
+                });
+            }
+        });
+
+        // Click → abrir ThirdActivity
+        miniPlayer.setOnClickListener(v -> {
+            Intent i = new Intent(this, ThirdActivity.class);
+            startActivity(i);
+        });
+
+
         // === Obtener vistas ===
         ImageButton backButton = findViewById(R.id.btn_back);
         FrameLayout playButtonLayout = findViewById(R.id.play_button_layout);
@@ -77,9 +119,18 @@ public class SecondaryActivity extends AppCompatActivity {
         tvArtistName.setText(artistName);
         tvArtistTitle.setText("Top Canciones");
 
+        String safeImage = (artistImage == null || artistImage.isEmpty())
+                ? null
+                : artistImage;
+        Log.e("SECONDARY", "Artist ID = " + artistId);
+        Log.e("SECONDARY", "Artist Name = " + artistName);
+        Log.e("SECONDARY", "Artist Image = " + artistImage);
+
+
         Glide.with(this)
-                .load(artistImage)
+                .load(safeImage)
                 .placeholder(R.drawable.image_2930)
+                .error(R.drawable.image_2930)
                 .into(imgArtist);
 
         // Botón volver

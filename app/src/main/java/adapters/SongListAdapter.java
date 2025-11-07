@@ -6,8 +6,10 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -58,8 +60,33 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
 
         // Click en el botón "más opciones"
         holder.btnMore.setOnClickListener(v -> {
-            if (listener != null) listener.onSongClicked(cancion);
+            PopupMenu popup = new PopupMenu(v.getContext(), v);
+            popup.getMenuInflater().inflate(R.menu.menu_opciones_music_list, popup.getMenu());
+            popup.setOnMenuItemClickListener(item -> {
+
+                int id = item.getItemId();
+                if (id == R.id.opcion_reproducir){
+                    listener.onSongClicked(cancion);
+                    return true;
+                }
+                else if (id == R.id.opcion_agregar_favoritos) {
+                    Toast.makeText(v.getContext(), "Agregado a favoritos", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                else if (id == R.id.opcion_agregar_a_lista) {
+                    Toast.makeText(v.getContext(), "Agregado a lista", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                else if (id == R.id.opcion_ocultar) {
+                    Toast.makeText(v.getContext(), "Ocultado", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                return false;
+            });
+
+            popup.show();
         });
+
     }
 
     @Override

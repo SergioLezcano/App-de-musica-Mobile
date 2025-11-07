@@ -205,6 +205,7 @@ public class FragmentHome extends Fragment {
 
         // 🚀 Si algún artista no tiene imagen, buscarla dinámicamente
         for (Artistas artista : favoriteArtists) {
+            Log.e("ARTIST_DEBUG", "Artist loaded: " + artista.getNombre() + " | id = " + artista.getIdSpotify());
             if ((artista.getImagenUrl() == null || artista.getImagenUrl().isEmpty()) &&
                     MainActivity.spotifyAccessToken != null) {
                 fetchArtistImageFromSpotify(artista);
@@ -263,6 +264,8 @@ public class FragmentHome extends Fragment {
 
                         // Actualizamos solo este artista en la lista
                         artista.setImagenUrl(imageUrl);
+                        // ✅ GUARDAR ID REAL DEL ARTISTA
+                        artista.setIdSpotify(firstArtist.getId());
                         saveFavoriteArtistsToPrefs();
 
                         // Notificar adapter para refrescar solo esta posición

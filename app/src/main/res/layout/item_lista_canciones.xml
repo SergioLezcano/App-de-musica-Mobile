@@ -71,9 +71,10 @@
             android:background="@drawable/bg_circule_btn_opcion"
             android:src="@drawable/more_vert_24dp"
             android:padding="12dp"
+            android:visibility="visible"
             android:contentDescription="Menú de opciones"
             app:tint="@color/white"
-            tools:ignore="MissingOnClick" />
+            app:menu="@menu/menu_opciones_music_list"/>
 
     </FrameLayout>
 
