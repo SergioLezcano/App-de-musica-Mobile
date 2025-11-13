@@ -51,8 +51,8 @@ public class Artistas {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Artistas artista = (Artistas) o;
-        // Solo comparamos por el nombre del artista (el identificador único)
-        return idSpotify != null && idSpotify.equals(artista.idSpotify);
+        // CRÍTICO: Comparar por nombre, asegurando que ambos no sean null
+        return nombre != null && nombre.equalsIgnoreCase(artista.nombre);
     }
 
     /**
@@ -60,7 +60,8 @@ public class Artistas {
      */
     @Override
     public int hashCode() {
-        return nombre.hashCode();
+        // CRÍTICO: Usar el nombre en minúsculas para consistencia con equals
+        return nombre != null ? nombre.toLowerCase().hashCode() : 0;
     }
 
     @NonNull

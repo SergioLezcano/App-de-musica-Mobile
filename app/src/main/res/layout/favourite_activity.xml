@@ -140,11 +140,10 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:scrollbars="none"
-                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                app:spanCount="3"
-                tools:itemCount="9"
-                tools:listitem="@layout/item_artist_circle"
-                android:contentDescription="Elegir música favorita"/>
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:itemCount="3"
+                tools:listitem="@layout/item_recently_played"
+                android:contentDescription="Música favorita"/>
 
         </LinearLayout>
 

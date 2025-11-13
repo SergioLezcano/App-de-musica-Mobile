@@ -11,7 +11,7 @@
         android:title="Agregar a la fila" />
     <item
         android:id="@+id/opcion_album"
-        android:title="Ver album" />
+        android:title="Agregar album favorito" />
     <item
         android:id="@+id/opcion_artista"
         android:title="Ver artista" />

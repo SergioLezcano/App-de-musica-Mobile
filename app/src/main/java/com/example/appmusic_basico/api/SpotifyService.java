@@ -5,6 +5,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import models.SpotifyAlbumDetailsResponse;
 
 // 🚀 Interfaz para las llamadas a la API Web de Spotify
 public interface SpotifyService {
@@ -30,5 +31,9 @@ public interface SpotifyService {
             @Query("market") String market
     );
 
-
+    @GET("albums/{id}")
+    Call<SpotifyAlbumDetailsResponse> getAlbumDetails(
+            @Header("Authorization") String authorization,
+            @Path("id") String albumId
+    );
 }

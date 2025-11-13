@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.appmusic_basico.R;
 
 import java.util.List;
@@ -43,9 +44,11 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistView
         if (artista.getImagenUrl() != null && !artista.getImagenUrl().isEmpty()) {
             Glide.with(holder.itemView.getContext())
                     .load(artista.getImagenUrl())
-                    .circleCrop() // Opcional: si quieres que las imágenes de artista sean circulares
-                    .placeholder(R.drawable.image_1034) // Placeholder mientras carga
-                    .error(R.drawable.image_2930)       // Placeholder si falla la carga
+                    .diskCacheStrategy(DiskCacheStrategy.NONE) // 💡 DESHABILITAR CACHE DE DISCO
+                    .skipMemoryCache(true)                    // 💡 DESHABILITAR CACHE DE MEMORIA
+                    .circleCrop()
+                    .placeholder(R.drawable.image_1034)
+                    .error(R.drawable.image_2930)
                     .into(holder.ivArtista);
         } else {
             // Si no hay URL (es null o está vacío), usa solo el placeholder
