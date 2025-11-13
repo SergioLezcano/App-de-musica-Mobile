@@ -529,9 +529,11 @@ public class ThirdActivity extends AppCompatActivity {
                             @Override
                             public void onResponse(retrofit2.Call<SpotifyArtistSearchResponse> call,
                                                    retrofit2.Response<SpotifyArtistSearchResponse> response) {
+                                Log.d(TAG, "Spotify API code: " + response.code());
                                 if (response.isSuccessful() && response.body() != null
                                         && response.body().getArtists() != null
                                         && !response.body().getArtists().getItems().isEmpty()) {
+                                    Log.d(TAG, "Spotify raw body: " + new Gson().toJson(response.body()));
 
                                     SpotifyArtistSearchResponse.Item firstArtist =
                                             response.body().getArtists().getItems().get(0);
@@ -557,7 +559,7 @@ public class ThirdActivity extends AppCompatActivity {
                                             // 🚨 GUARDAR LA LISTA COMPLETA ACTUALIZADA CON COMMIT
                                             String jsonUpdated = gson.toJson(finalFavoritos);
                                             Log.e("PERSISTENCE_CHECK", "JSON con URL actualizada a guardar: " + jsonUpdated);
-                                            prefs.edit().putString("favorite_artists_json", jsonUpdated).commit();
+                                            prefs.edit().putString("favorite_artists_json", gson.toJson(finalFavoritos)).commit();
 
                                             // Notificar a FragmentHome SÓLO DESPUÉS de guardar
                                             sendBroadcast(new Intent("ARTIST_FAVORITE_UPDATE"));
@@ -573,7 +575,7 @@ public class ThirdActivity extends AppCompatActivity {
                                     }
 
                                 } else {
-                                    Log.e(TAG, "❌ Respuesta de búsqueda de Spotify inválida o vacía para '" + artista.getNombre() + "'. Código: " + response.code());
+                                    Log.e(TAG, "Spotify error body: " + response.errorBody());
                                     // Si falla la búsqueda, aún así guardamos y notificamos
                                     prefs.edit().putString("favorite_artists_json", gson.toJson(finalFavoritos)).commit();
                                     sendBroadcast(new Intent("ARTIST_FAVORITE_UPDATE"));

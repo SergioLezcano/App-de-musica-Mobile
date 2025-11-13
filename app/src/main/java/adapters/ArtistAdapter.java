@@ -43,7 +43,7 @@ public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ArtistView
         // 🚀 LÓGICA DE CARGA DE IMAGEN CON GLIDE
         if (artista.getImagenUrl() != null && !artista.getImagenUrl().isEmpty()) {
             Glide.with(holder.itemView.getContext())
-                    .load(artista.getImagenUrl())
+                    .load(artista.getImagenUrl() != null ? artista.getImagenUrl() : R.drawable.image_1034)
                     .diskCacheStrategy(DiskCacheStrategy.NONE) // 💡 DESHABILITAR CACHE DE DISCO
                     .skipMemoryCache(true)                    // 💡 DESHABILITAR CACHE DE MEMORIA
                     .circleCrop()

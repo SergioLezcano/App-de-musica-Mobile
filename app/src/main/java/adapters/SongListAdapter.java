@@ -24,9 +24,11 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
     private final List<Cancion_Reciente> canciones;
     private final OnSongClickListener listener;
 
-    // Interfaz para manejar click
+    // 🛑 MODIFICACIÓN CRÍTICA: Añadir el método para manejar la acción de favoritos
     public interface OnSongClickListener {
         void onSongClicked(Cancion_Reciente cancion);
+        // 🆕 NUEVO MÉTODO: Se llama cuando el usuario elige 'Agregar a Favoritos'
+        void onAddToFavoritesClicked(Cancion_Reciente cancion);
     }
 
     public SongListAdapter(List<Cancion_Reciente> canciones, OnSongClickListener listener) {
@@ -53,15 +55,19 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
         Glide.with(holder.itemView.getContext())
                 .load(cancion.getCoverUrl())
                 .placeholder(R.drawable.image_2930)
+                .error(R.drawable.image_2930) // Añadido error placeholder por seguridad
                 .into(holder.ivImagen);
 
-        // Click en toda la fila
+        // Click en toda la fila (Reproducir)
         holder.itemView.setOnClickListener(v -> listener.onSongClicked(cancion));
 
         // Click en el botón "más opciones"
         holder.btnMore.setOnClickListener(v -> {
             PopupMenu popup = new PopupMenu(v.getContext(), v);
+
+            // 🛑 Asegúrate de que el XML 'menu_opciones_music_list' existe
             popup.getMenuInflater().inflate(R.menu.menu_opciones_music_list, popup.getMenu());
+
             popup.setOnMenuItemClickListener(item -> {
 
                 int id = item.getItemId();
@@ -70,7 +76,8 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
                     return true;
                 }
                 else if (id == R.id.opcion_agregar_favoritos) {
-                    Toast.makeText(v.getContext(), "Agregado a favoritos", Toast.LENGTH_SHORT).show();
+                    // 🛑 CRÍTICO: Llamar al nuevo método en la actividad
+                    listener.onAddToFavoritesClicked(cancion);
                     return true;
                 }
                 else if (id == R.id.opcion_agregar_a_lista) {
@@ -111,4 +118,3 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
         }
     }
 }
-

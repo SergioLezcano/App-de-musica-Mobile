@@ -205,32 +205,27 @@ public class FragmentHome extends Fragment {
     // 🌟 ARTISTAS FAVORITOS
     // ===========================================================
 
-    // En FragmentHome.java
-
     private void setupFavoriteArtistsRecyclerView(View view) {
         // 1. Cargar datos frescos de SharedPreferences
-        // NOTA: loadFavoriteArtists() es la única que debe leer SharedPreferences.
         List<Artistas> freshArtists = loadFavoriteArtists();
 
-        // 2. Limpiar la lista de la clase y llenarla con los datos frescos.
-        // Esto asegura que el adaptador (si ya existe) apunte a la lista correcta y se actualice.
+        // 2. Actualizar la lista interna
         favoriteArtists.clear();
         favoriteArtists.addAll(freshArtists);
 
-        // 3. Controlar la visibilidad.
-        // Si la lista está vacía, se oculta el RecyclerView.
+        // 3. Controlar la visibilidad
         if (rvArtists != null) {
             rvArtists.setVisibility(favoriteArtists.isEmpty() ? View.GONE : View.VISIBLE);
         }
 
         // 4. Inicializar o notificar al adaptador
         if (artistAdapter == null) {
-            // Inicialización (solo la primera vez en onViewCreated)
             artistAdapter = new ArtistAdapter(favoriteArtists);
-            rvArtists.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+            rvArtists.setLayoutManager(
+                    new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false)
+            );
             rvArtists.setAdapter(artistAdapter);
         } else {
-            // Si el adaptador ya existe, solo notificar que los datos cambiaron
             artistAdapter.notifyDataSetChanged();
         }
     }
@@ -248,73 +243,6 @@ public class FragmentHome extends Fragment {
         return favorites != null ? favorites : new ArrayList<>();
     }
 
-    // ===========================================================
-    // 🔍 Obtener imagen del artista desde Spotify Web API
-    // ===========================================================
-//    private void fetchArtistImageFromSpotify(Artistas artista) {
-//        if (MainActivity.spotifyAccessToken == null) return;
-//
-//        SpotifyService api = RetrofitClient.getClient().create(SpotifyService.class);
-//
-//        Log.d(TAG, "🔍 Buscando artista en Spotify: " + artista.getNombre());
-//
-//        api.searchArtists(
-//                "Bearer " + MainActivity.spotifyAccessToken,
-//                artista.getNombre().trim(),
-//                "artist"
-//        ).enqueue(new Callback<SpotifyArtistSearchResponse>() {
-//            @Override
-//            public void onResponse(Call<SpotifyArtistSearchResponse> call,
-//                                   Response<SpotifyArtistSearchResponse> response) {
-//
-//                if (response.isSuccessful() && response.body() != null
-//                        && response.body().getArtists() != null
-//                        && !response.body().getArtists().getItems().isEmpty()) {
-//
-//                    SpotifyArtistSearchResponse.Item firstArtist =
-//                            response.body().getArtists().getItems().get(0);
-//
-//                    if (firstArtist.getImages() != null && !firstArtist.getImages().isEmpty()) {
-//                        String imageUrl = firstArtist.getImages().get(0).getUrl();
-//                        Log.d(TAG, "✅ Imagen obtenida de Spotify para " +
-//                                artista.getNombre() + ": " + imageUrl);
-//                        // Actualizamos solo este artista en la lista
-//                        artista.setImagenUrl(imageUrl);
-//                        // ✅ GUARDAR ID REAL DEL ARTISTA
-//                        artista.setIdSpotify(firstArtist.getId());
-//                        saveFavoriteArtistsToPrefs();
-//
-//                        // Notificar adapter para refrescar solo esta posición
-//                        int index = favoriteArtists.indexOf(artista);
-//                        if (index != -1 && artistAdapter != null) {
-//                            artistAdapter.notifyItemChanged(index);
-//                        }
-//
-//                    } else {
-//                        Log.w(TAG, "⚠️ El artista " + artista.getNombre() + " no tiene imágenes en Spotify.");
-//                    }
-//
-//                } else {
-//                    Log.e(TAG, "❌ Respuesta inválida para " + artista.getNombre() +
-//                            " → Código: " + response.code() +
-//                            " → Body: " + (response.body() != null ? "OK" : "null"));
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<SpotifyArtistSearchResponse> call, Throwable t) {
-//                Log.e(TAG, "❌ Error al obtener imagen del artista: " +
-//                        artista.getNombre() + " → " + t.getMessage(), t);
-//            }
-//        });
-//    }
-
-
-//    private void saveFavoriteArtistsToPrefs() {
-//        if (getContext() == null) return;
-//        android.content.SharedPreferences prefs = getContext().getSharedPreferences("AppPrefs", android.content.Context.MODE_PRIVATE);
-//        prefs.edit().putString("favorite_artists_json", gson.toJson(favoriteArtists)).apply();
-//    }
 
     private void registerRecentSongsReceiver() {
         BroadcastReceiver recentReceiver = new BroadcastReceiver() {

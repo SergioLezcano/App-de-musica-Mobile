@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -20,8 +21,11 @@ import com.bumptech.glide.Glide;
 import com.example.appmusic_basico.api.RetrofitClient;
 import com.example.appmusic_basico.api.SpotifyArtistTopTracksResponse;
 import com.example.appmusic_basico.api.SpotifyService;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.spotify.android.appremote.api.SpotifyAppRemote;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +35,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class SecondaryActivity extends AppCompatActivity {
+public class SecondaryActivity extends AppCompatActivity implements SongListAdapter.OnSongClickListener {
 
     private SpotifyAppRemote mSpotifyAppRemote;
     private RecyclerView rvSongList;
@@ -128,7 +132,7 @@ public class SecondaryActivity extends AppCompatActivity {
 
         // === Configurar RecyclerView ===
         rvSongList.setLayoutManager(new LinearLayoutManager(this));
-        songListAdapter = new SongListAdapter(topTracks, this::onSongClicked);
+        songListAdapter = new SongListAdapter(topTracks, this);
         rvSongList.setAdapter(songListAdapter);
 
         // === Obtener datos enviados desde el fragment o adapter ===
@@ -231,9 +235,37 @@ public class SecondaryActivity extends AppCompatActivity {
     // ===========================================================================================
     // ✅ AL HACER CLICK EN UNA CANCION
     // ===========================================================================================
-    private void onSongClicked(Cancion_Reciente cancion) {
-        playSong(cancion);
+    private void onSongClicked(Cancion_Reciente cancion, View itemView) {
+
+        // Si es un click normal, reproducir
+        if (!itemView.isLongClickable()) {
+            playSong(cancion);
+            return;
+        }
+
+        // Si es un long click (asumiendo que el adaptador lo maneja)
+        // Mostramos el menú contextual
+        showSongPopupMenu(itemView, cancion);
     }
+
+    // ------------------------------------------------------------------------------------------
+// 📝 NUEVO MÉTODO: Mostrar menú desplegable para agregar a favoritos
+// ------------------------------------------------------------------------------------------
+    private void showSongPopupMenu(View view, Cancion_Reciente cancion) {
+        PopupMenu popup = new PopupMenu(this, view);
+        popup.getMenuInflater().inflate(R.menu.menu_opciones_music_list, popup.getMenu());
+
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.opcion_agregar_favoritos) {
+                toggleFavoriteSong(cancion);
+                return true;
+            }
+            return false;
+        });
+        popup.show();
+    }
+
+
 
     // ===========================================================================================
     // ✅ REPRODUCIR UNA CANCION USANDO MAINACTIVITY (PLAYLISTMANAGER)
@@ -257,6 +289,48 @@ public class SecondaryActivity extends AppCompatActivity {
     }
 
 
+    // ------------------------------------------------------------------------------------------
+// 💾 NUEVO MÉTODO: Lógica para agregar/eliminar canción favorita
+// ------------------------------------------------------------------------------------------
+    private void toggleFavoriteSong(Cancion_Reciente song) {
+        if (song == null) return;
+
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        // Usaremos la Gson existente
+
+        // 1. Cargar lista actual
+        String json = prefs.getString("favorite_songs_json", "[]");
+        Type type = new TypeToken<List<Cancion_Reciente>>() {}.getType();
+        List<Cancion_Reciente> favorites = new Gson().fromJson(json, type);
+        if (favorites == null) favorites = new ArrayList<>();
+
+        // 2. Comprobar si existe (usando URI como identificador único)
+        Cancion_Reciente existingSong = null;
+        for (Cancion_Reciente c : favorites) {
+            if (c.getSpotifyUri().equals(song.getSpotifyUri())) {
+                existingSong = c;
+                break;
+            }
+        }
+
+        // 3. Agregar o Eliminar
+        if (existingSong != null) {
+            // Eliminar
+            favorites.remove(existingSong);
+            Toast.makeText(this, song.getTitulo() + " eliminado de favoritos.", Toast.LENGTH_SHORT).show();
+        } else {
+            // Agregar
+            favorites.add(0, song); // Agregar al inicio de la lista
+            Toast.makeText(this, song.getTitulo() + " agregado a favoritos.", Toast.LENGTH_SHORT).show();
+        }
+
+        // 4. Guardar y Notificar (usando commit para sincronización)
+        prefs.edit().putString("favorite_songs_json", new Gson().toJson(favorites)).commit();
+
+        // 5. Enviar Broadcast
+        Intent intent = new Intent("SONG_FAVORITE_UPDATE"); // Usar la nueva acción
+        sendBroadcast(intent);
+    }
     private void showMiniPlayer() {
         View miniBar = findViewById(R.id.mini_player_bar);
         TextView title = findViewById(R.id.mini_player_track_title);
@@ -326,6 +400,20 @@ public class SecondaryActivity extends AppCompatActivity {
         // Enviar broadcast interno → FragmentHome actualizará el Recycler
         Intent intent = new Intent("UPDATE_RECENTLY_PLAYED");
         sendBroadcast(intent);
+    }
+
+    // En SecondaryActivity.java (Añade estos dos métodos, si no los tienes)
+
+    @Override
+    public void onSongClicked(Cancion_Reciente cancion) {
+        // Esto maneja el clic normal (reproducir)
+        playSong(cancion);
+    }
+
+    @Override
+    public void onAddToFavoritesClicked(Cancion_Reciente cancion) {
+        // Esto maneja el clic en "Agregar a Favoritos" (guardar)
+        toggleFavoriteSong(cancion);
     }
 
 
