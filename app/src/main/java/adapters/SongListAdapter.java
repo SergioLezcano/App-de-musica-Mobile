@@ -24,10 +24,10 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
     private final List<Cancion_Reciente> canciones;
     private final OnSongClickListener listener;
 
-    // 🛑 MODIFICACIÓN CRÍTICA: Añadir el método para manejar la acción de favoritos
+    //método para manejar la acción de favoritos
     public interface OnSongClickListener {
         void onSongClicked(Cancion_Reciente cancion);
-        // 🆕 NUEVO MÉTODO: Se llama cuando el usuario elige 'Agregar a Favoritos'
+        // NUEVO MÉTODO: Se llama cuando el usuario elige 'Agregar a Favoritos'
         void onAddToFavoritesClicked(Cancion_Reciente cancion);
     }
 
@@ -65,7 +65,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
         holder.btnMore.setOnClickListener(v -> {
             PopupMenu popup = new PopupMenu(v.getContext(), v);
 
-            // 🛑 Asegúrate de que el XML 'menu_opciones_music_list' existe
+            // infla el menu de opciones
             popup.getMenuInflater().inflate(R.menu.menu_opciones_music_list, popup.getMenu());
 
             popup.setOnMenuItemClickListener(item -> {
@@ -76,7 +76,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
                     return true;
                 }
                 else if (id == R.id.opcion_agregar_favoritos) {
-                    // 🛑 CRÍTICO: Llamar al nuevo método en la actividad
+                    // Llamar al nuevo método en la actividad
                     listener.onAddToFavoritesClicked(cancion);
                     return true;
                 }

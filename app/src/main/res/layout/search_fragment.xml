@@ -30,14 +30,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_search_results"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        android:orientation="vertical"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/search_separator"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <ScrollView
+        android:id="@+id/scroll_view_exploration"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/search_separator"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:importantForAccessibility="no">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -67,17 +81,14 @@
                     android:layout_height="120dp"
                     android:scaleType="centerCrop"
                     android:layout_margin="8dp"
-                    android:src="@drawable/album_art_placeholder"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:src="@drawable/album_art_placeholder" />
 
             </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Explora por album"
+                android:text="Explora por álbum"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="12dp"
@@ -94,10 +105,7 @@
                     android:layout_height="120dp"
                     android:scaleType="centerCrop"
                     android:layout_margin="8dp"
-                    android:src="@drawable/album_art_placeholder"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:src="@drawable/album_art_placeholder" />
 
             </LinearLayout>
 
@@ -113,7 +121,8 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:paddingBottom="16dp">
 
                 <ImageView
                     android:id="@+id/iv_artist_search"
@@ -121,15 +130,11 @@
                     android:layout_height="120dp"
                     android:scaleType="centerCrop"
                     android:layout_margin="8dp"
-                    android:src="@drawable/album_art_placeholder"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:src="@drawable/album_art_placeholder" />
 
             </LinearLayout>
 
         </LinearLayout>
-
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

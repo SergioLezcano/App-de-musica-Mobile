@@ -36,4 +36,12 @@ public interface SpotifyService {
             @Header("Authorization") String authorization,
             @Path("id") String albumId
     );
+
+    // 🆕 NUEVO MÉTODO: Búsqueda general por tipo (ej: "track,artist,album")
+    @GET("search")
+    Call<SpotifySearchGeneralResponse> searchAll(
+            @Header("Authorization") String authHeader,
+            @Query("q") String query,
+            @Query("type") String type
+    );
 }

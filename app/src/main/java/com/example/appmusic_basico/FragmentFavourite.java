@@ -35,17 +35,15 @@ public class FragmentFavourite extends Fragment {
 
     private static final String TAG = "FragmentFavourite";
     private static final int LAYOUT_RES_ID = R.layout.favourite_activity;
-
     private RecyclerView rvFavoriteAlbum;
     private AlbumAdapter albumAdapter;
     private List<AlbumFavorito> favoriteAlbums = new ArrayList<>();
-
     private final Gson gson = new Gson();
-    private BroadcastReceiver albumUpdateReceiver; // Nuevo receiver
-    private RecyclerView rvFavoriteMusic; // 🆕 Nuevo RecyclerView
-    private RecentlyPlayedAdapter songFavoriteAdapter; // 🆕 Nuevo adaptador (podemos reutilizarlo)
-    private List<Cancion_Reciente> favoriteSongs = new ArrayList<>(); // 🆕 Nueva lista
-    private BroadcastReceiver songUpdateReceiver; // 🆕 Nuevo receiver
+    private BroadcastReceiver albumUpdateReceiver;
+    private RecyclerView rvFavoriteMusic;
+    private RecentlyPlayedAdapter songFavoriteAdapter;
+    private List<Cancion_Reciente> favoriteSongs = new ArrayList<>();
+    private BroadcastReceiver songUpdateReceiver;
 
     public FragmentFavourite() {
     }
@@ -66,10 +64,10 @@ public class FragmentFavourite extends Fragment {
         setupFavoriteAlbumsRecyclerView();
 
         // --------------------------------------------
-        // 🎶 Canciones Favoritas (🆕 Nuevo)
+        // 🎶 Canciones Favoritas
         // --------------------------------------------
         rvFavoriteMusic = view.findViewById(R.id.rv_favorite_music);
-        setupFavoriteSongsRecyclerView(); // 🆕 Llamada al nuevo setup
+        setupFavoriteSongsRecyclerView(); // Llamada al setup
 
         // --------------------------------------------
         // 📡 Broadcast interno para actualizar álbumes
@@ -94,7 +92,7 @@ public class FragmentFavourite extends Fragment {
         );
 
         // --------------------------------------------
-        // 📡 Broadcast interno para actualizar Canciones (🆕 Nuevo)
+        // 📡 Broadcast interno para actualizar Canciones
         // --------------------------------------------
         songUpdateReceiver = new BroadcastReceiver() {
             @Override
@@ -123,7 +121,7 @@ public class FragmentFavourite extends Fragment {
             albumUpdateReceiver = null;
         }
 
-        // 🆕 Unregister del nuevo receiver
+        // Unregister del nuevo receiver
         if (songUpdateReceiver != null) {
             requireContext().unregisterReceiver(songUpdateReceiver);
             songUpdateReceiver = null;
@@ -131,7 +129,7 @@ public class FragmentFavourite extends Fragment {
     }
 
     // ===========================================================
-    // 💾 GESTIÓN DE ÁLBUMES FAVORITOS
+    // GESTIÓN DE ÁLBUMES FAVORITOS
     // ===========================================================
 
     private void setupFavoriteAlbumsRecyclerView() {
@@ -139,7 +137,7 @@ public class FragmentFavourite extends Fragment {
         loadFavoriteAlbums();
 
         // 2. Configurar el RecyclerView
-        // Utiliza un LinearLayoutManager horizontal como en tu XML
+        // Utiliza un LinearLayoutManager horizontal
         rvFavoriteAlbum.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
         // 3. Inicializar y conectar el adaptador
@@ -183,8 +181,8 @@ public class FragmentFavourite extends Fragment {
     }
 
     // ===========================================================
-// 💾 NUEVO MÉTODO: GESTIÓN DE CANCIONES FAVORITAS
-// ===========================================================
+    //NUEVO MÉTODO: GESTIÓN DE CANCIONES FAVORITAS
+    // ===========================================================
 
     private void setupFavoriteSongsRecyclerView() {
         // 1. Cargar datos de SharedPreferences
