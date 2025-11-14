@@ -34,7 +34,6 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
     @NonNull
     @Override
     public AlbumViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Asumiendo que este layout es similar a item_recently_played
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recently_played, parent, false);
         return new AlbumViewHolder(view);
     }

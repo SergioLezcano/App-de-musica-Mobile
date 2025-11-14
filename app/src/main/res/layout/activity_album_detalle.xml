@@ -2,10 +2,12 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/black"
     android:padding="8dp"
     android:paddingTop="12dp"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".AlbumDetalleActivity">
 
     <ScrollView
         android:id="@+id/sv_contenedor_album_detalle"
@@ -63,7 +65,7 @@
 
                 <TextView
                     android:id="@+id/tv_album_nombre"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     android:contentDescription="Titulo del Album"
@@ -82,13 +84,12 @@
 
                 <TextView
                     android:id="@+id/tv_artista_nombre"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:textAlignment="center"
                     android:text="Artista"
                     android:textColor="@color/bottom_nav_bg"
-                    app:layout_constraintTop_toBottomOf="tv_album_nombre"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -146,7 +147,8 @@
                 android:layout_height="wrap_content"
                 android:text="Lista de canciones"
                 android:layout_marginTop="16dp"
-                android:textSize="16dp"
+                android:layout_marginBottom="12dp"
+                android:textSize="18dp"
                 android:textColor="@color/white"
                 android:textStyle="bold">
 
@@ -158,9 +160,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:clipToPadding="false"
-                android:layout_marginTop="8dp"
-                android:paddingTop="16dp"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager">
+                android:layout_marginBottom="60dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_album_detalle">
             </androidx.recyclerview.widget.RecyclerView>
 
 

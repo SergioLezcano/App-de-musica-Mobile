@@ -36,19 +36,14 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class SecondaryActivity extends AppCompatActivity implements SongListAdapter.OnSongClickListener {
-
-    private SpotifyAppRemote mSpotifyAppRemote;
     private RecyclerView rvSongList;
     private SongListAdapter songListAdapter;
-
     private ImageView imgArtist;
     private TextView tvArtistName;
     private TextView tvArtistTitle;
-
     private String artistId;
     private String artistName;
     private String artistImage;
-
     private List<Cancion_Reciente> topTracks = new ArrayList<>();
 
     @Override

@@ -266,7 +266,7 @@ public class FragmentSearch extends Fragment implements
                 openArtistTopTracks(item.getSpotifyId());
                 break;
             case "album":
-                // Lógica para abrir AlbumDetailActivity
+                openAlbumDetail(item);
                 break;
             case "track":
                 playTrack(item);
@@ -307,6 +307,22 @@ public class FragmentSearch extends Fragment implements
 
         } else {
             Toast.makeText(getContext(), "No se puede reproducir. Player no disponible o URI faltante.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // 🆕 Método para manejar la navegación a los detalles del Álbum
+    private void openAlbumDetail(SearchResultItem albumItem) {
+        if (getContext() != null) {
+            Intent intent = new Intent(getContext(), AlbumDetalleActivity.class);
+
+            // Pasamos los datos esenciales del álbum a la nueva Activity
+            intent.putExtra("ALBUM_ID", albumItem.getSpotifyId());
+            intent.putExtra("ALBUM_URI", albumItem.getSpotifyUri());
+            intent.putExtra("ALBUM_NAME", albumItem.getTitle());
+            intent.putExtra("ARTIST_NAME", albumItem.getSubtitle());
+            intent.putExtra("ALBUM_IMAGE_URL", albumItem.getImageUrl());
+
+            startActivity(intent);
         }
     }
 

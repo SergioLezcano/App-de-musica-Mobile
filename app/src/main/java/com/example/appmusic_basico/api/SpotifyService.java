@@ -44,4 +44,10 @@ public interface SpotifyService {
             @Query("q") String query,
             @Query("type") String type
     );
+
+    @GET("albums/{id}/tracks")
+    Call<SpotifyAlbumTracksResponse> getAlbumTracks(
+            @Header("Authorization") String authHeader,
+            @Path("id") String albumId
+    );
 }

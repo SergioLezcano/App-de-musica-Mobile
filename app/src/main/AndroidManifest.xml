@@ -51,5 +51,6 @@
 
         <activity android:name=".SecondaryActivity" android:exported="true"/>
         <activity android:name=".ThirdActivity" android:launchMode="singleTop" android:exported="false"/>
+        <activity android:name=".AlbumDetalleActivity" android:exported="true"/>
     </application>
 </manifest>

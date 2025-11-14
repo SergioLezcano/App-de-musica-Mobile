@@ -39,8 +39,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private static final String REDIRECT_URI = "spotify-auth-app-basico://callback";
     private static final int REQUEST_CODE = 1337;
     private static final String TAG = "SpotifyMusicApp";
-    private static final String HOME_FRAGMENT_TAG = "HomeFragment";
-
     public static SpotifyAppRemote mSpotifyAppRemote;
     public static String spotifyAccessToken = null;
     private static String mPendingSpotifyUri = null;
