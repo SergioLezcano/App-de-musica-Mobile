@@ -3,6 +3,7 @@ package adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView; // Ejemplo: Si item_album_detalle usa TextView
 import android.widget.ImageView; // Ejemplo: Si item_album_detalle usa ImageView
 
@@ -23,6 +24,7 @@ public class AlbumDetalleAdapter extends RecyclerView.Adapter<AlbumDetalleAdapte
     // 🛑 2. Definir la interfaz de clic para comunicar la selección a la Activity
     public interface AlbumClickListener {
         void onTrackClick(Cancion_Reciente track);
+        void onMoreOptionsClick(Cancion_Reciente track, View view);
     }
 
     // 🛑 3. El constructor debe aceptar AlbumClickListener (no AlbumDetalleActivity directamente)
@@ -54,6 +56,13 @@ public class AlbumDetalleAdapter extends RecyclerView.Adapter<AlbumDetalleAdapte
                 clickListener.onTrackClick(track);
             }
         });
+
+        // 🆕 Listener para el botón de Opciones
+        holder.ibMoreOptions.setOnClickListener(v -> {
+            if (clickListener != null) {
+                clickListener.onMoreOptionsClick(track, v);
+            }
+        });
     }
 
     @Override
@@ -65,14 +74,13 @@ public class AlbumDetalleAdapter extends RecyclerView.Adapter<AlbumDetalleAdapte
     // 🛑 6. Definir la clase ViewHolder
     public static class AlbumViewHolder extends RecyclerView.ViewHolder {
 
-        //TextView tvTrackNumber; // Asume que tienes este TextView en item_album_detalle
+        ImageButton ibMoreOptions;
         TextView tvTrackTitle;
         TextView tvArtistName;
 
         public AlbumViewHolder(@NonNull View itemView) {
             super(itemView);
-            // 🆕 Aquí debes inicializar las vistas de tu item_album_detalle. Ejemplo:
-            //tvTrackNumber = itemView.findViewById(R.id.tv_titulo_album);
+            ibMoreOptions = itemView.findViewById(R.id.iv_more_vertical_album);
             tvTrackTitle = itemView.findViewById(R.id.tv_titulo_album);
             tvArtistName = itemView.findViewById(R.id.tv_titulo_song);
         }

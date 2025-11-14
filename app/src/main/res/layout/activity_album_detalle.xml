@@ -103,7 +103,8 @@
                 android:id="@+id/ly_contenedor_btnPlay"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
 
                 <FrameLayout
                     android:id="@+id/fl_contenedor_btnPlay"

@@ -10,12 +10,14 @@
 
     <LinearLayout
         android:id="@+id/ly_contenedor_item_albumDetalle"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="4dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/fl_mas_opciones">
 
         <TextView
             android:id="@+id/tv_titulo_album"
@@ -27,7 +29,7 @@
             android:text="Titulo del album"
             android:textColor="@color/white"
             android:textStyle="bold"
-            android:textSize="18dp"
+            android:textSize="16dp"
             android:contentDescription="Titulo Album">
 
         </TextView>
@@ -47,6 +49,29 @@
         </TextView>
 
     </LinearLayout>
+
+    <!-- Botón de opciones -->
+    <FrameLayout
+        android:id="@+id/fl_mas_opciones"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageButton
+            android:id="@+id/iv_more_vertical_album"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_circule_btn_opcion"
+            android:src="@drawable/more_vert_24dp"
+            android:padding="12dp"
+            android:visibility="visible"
+            android:contentDescription="Menú de opciones"
+            app:tint="@color/white"
+            app:menu="@menu/menu_opciones_album_detalle"/>
+
+    </FrameLayout>
 
 
 

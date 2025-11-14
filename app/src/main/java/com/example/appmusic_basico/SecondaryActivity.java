@@ -312,11 +312,11 @@ public class SecondaryActivity extends AppCompatActivity implements SongListAdap
         if (existingSong != null) {
             // Eliminar
             favorites.remove(existingSong);
-            Toast.makeText(this, song.getTitulo() + " eliminado de favoritos.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, song.getTitulo() + " eliminado de musica favoritos.", Toast.LENGTH_SHORT).show();
         } else {
             // Agregar
             favorites.add(0, song); // Agregar al inicio de la lista
-            Toast.makeText(this, song.getTitulo() + " agregado a favoritos.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, song.getTitulo() + " agregado a musica favoritos.", Toast.LENGTH_SHORT).show();
         }
 
         // 4. Guardar y Notificar (usando commit para sincronización)

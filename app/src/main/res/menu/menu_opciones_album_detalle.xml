@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/op_agregar_musica_favortita"
+        android:title="agregar a musica favorita" />
+    <item
+        android:id="@+id/opcion_agregar_a_fila"
+        android:title="agregar a la fila" />
+    <item
+        android:id="@+id/opcion_agregar_artist_favoritos"
+        android:title="agregar a artistas favoritos" />
+    <item
+        android:id="@+id/opcion_ocultar"
+        android:title="ocultar" />
+
+    <item
+        android:id="@+id/opcion_compartir_cancion"
+        android:title="compartir"/>
+</menu>
