@@ -3,19 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:layout_marginEnd="16dp">
-    <ImageView
-        android:id="@+id/iv_album_art2"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:scaleType="centerCrop"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/bg_circule_image"
-        tools:src="@drawable/album_art_placeholder" />
+    android:padding="8dp"
+    android:orientation="vertical">
 
     <TextView
-        android:id="@+id/tv_title"
+        android:id="@+id/tv_title_target"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxWidth="120dp"
@@ -24,7 +16,15 @@
         android:textStyle="bold"
         android:maxLines="1"
         android:ellipsize="end"
-        tools:text="Nombre del Álbum" />
+        tools:text="CardView"/>
 
+    <ImageButton
+        android:id="@+id/iv_image_explored"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:scaleType="centerCrop"
+        android:background="@drawable/bg_rounded_card"
+        tools:src="@drawable/album_art_placeholder"
+        android:contentDescription="Tarjetas"/>
 
 </LinearLayout>

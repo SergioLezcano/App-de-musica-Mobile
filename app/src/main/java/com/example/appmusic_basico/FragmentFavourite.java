@@ -26,9 +26,9 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-import adapters.AlbumAdapter; // Importar el nuevo adaptador
+import adapters.AlbumAdapter;
 import adapters.RecentlyPlayedAdapter;
-import models.AlbumFavorito; // Importar el nuevo modelo
+import models.AlbumFavorito;
 import models.Cancion_Reciente;
 
 public class FragmentFavourite extends Fragment {
