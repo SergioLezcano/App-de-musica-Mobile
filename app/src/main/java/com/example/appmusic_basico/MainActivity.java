@@ -31,6 +31,7 @@ import java.util.List;
 
 import managers.PlaylistManager;
 import models.Cancion_Reciente;
+import models.SearchResultItem;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnItemSelectedListener {
 
@@ -335,6 +336,27 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             mSpotifyAppRemote.getPlayerApi().play(uri)
                     .setResultCallback(empty -> Log.d(TAG, "✅ Reproducción iniciada con URI: " + uri))
                     .setErrorCallback(error -> Log.e(TAG, "❌ Fallo al reproducir: " + error.getMessage()));
+        }
+    }
+
+    public void trackPlayed(SearchResultItem track) {
+        // 1. Crear una nueva Cancion_Reciente
+        Cancion_Reciente nuevaCancion = new Cancion_Reciente(
+                track.getTitle(),
+                track.getSubtitle(), // Nombre del artista
+                track.getImageUrl(),
+                track.getSpotifyUri(),
+                true
+        );
+
+        // 2. Añadirla a la lista global.
+        // Lo ideal es primero eliminar duplicados si existe (para que sea la más reciente)
+        globalPlaylist.removeIf(c -> c.getSpotifyUri().equals(track.getSpotifyUri()));
+        globalPlaylist.add(0, nuevaCancion); // Agregar al inicio (más reciente)
+
+        // 3. Notificar a FragmentHome para que actualice la vista de recientes
+        if (fragmentHome != null) {
+            fragmentHome.cargarCancionesRecientes();
         }
     }
 

@@ -64,6 +64,7 @@ public class FragmentSearch extends Fragment implements
 
     public FragmentSearch() {}
 
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.search_fragment, container, false);
@@ -268,7 +269,7 @@ public class FragmentSearch extends Fragment implements
                 // Lógica para abrir AlbumDetailActivity
                 break;
             case "track":
-                // Lógica para reproducir la canción
+                playTrack(item);
                 break;
         }
     }
@@ -285,6 +286,27 @@ public class FragmentSearch extends Fragment implements
 
             // 3. Iniciar la actividad
             startActivity(intent);
+        }
+    }
+
+    // 🆕 Método para manejar la reproducción de una canción
+    private void playTrack(SearchResultItem trackItem) {
+        MainActivity activity = (MainActivity) getActivity();
+
+        if (activity != null && trackItem.getSpotifyUri() != null) {
+
+            // 1. Reproducir la canción usando el método de MainActivity.
+            // MainActivity se encargará de usar mSpotifyAppRemote y playlistManager.
+            activity.playSpotifyUri(trackItem.getSpotifyUri());
+
+            // 2. Notificar a MainActivity para que registre la canción como reciente
+            // y actualice el minirreproductor.
+            activity.trackPlayed(trackItem);
+
+            Toast.makeText(getContext(), "Reproduciendo: " + trackItem.getTitle(), Toast.LENGTH_SHORT).show();
+
+        } else {
+            Toast.makeText(getContext(), "No se puede reproducir. Player no disponible o URI faltante.", Toast.LENGTH_SHORT).show();
         }
     }
 

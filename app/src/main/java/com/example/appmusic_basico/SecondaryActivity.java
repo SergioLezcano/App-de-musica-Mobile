@@ -402,9 +402,7 @@ public class SecondaryActivity extends AppCompatActivity implements SongListAdap
         sendBroadcast(intent);
     }
 
-    // En SecondaryActivity.java (Añade estos dos métodos, si no los tienes)
-
-    @Override
+     @Override
     public void onSongClicked(Cancion_Reciente cancion) {
         // Esto maneja el clic normal (reproducir)
         playSong(cancion);
