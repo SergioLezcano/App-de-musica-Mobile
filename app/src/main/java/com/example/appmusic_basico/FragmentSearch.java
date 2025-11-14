@@ -339,9 +339,12 @@ public class FragmentSearch extends Fragment implements
     private void loadNewAlbums() {
         // 🛑 Nota: Aquí iría la llamada a la API de Spotify: /browse/new-releases
         // Datos de prueba para la UI
-        albumList.add(new AlbumExplorerItem("a1", "Certified Lover Boy", "Drake", "https://i.scdn.co/image/ab67616d00001e02404b901a91d1e4e73e2d67a1"));
-        albumList.add(new AlbumExplorerItem("a2", "SOUR", "Olivia Rodrigo", "https://i.scdn.co/image/ab67616d00001e02613b4c194b12484a0d9b4b0e"));
-        albumList.add(new AlbumExplorerItem("a3", "Midnights", "Taylor Swift", "https://i.scdn.co/image/ab67616d00001e02f92f6943b17c3857db636e78"));
+        albumList.add(new AlbumExplorerItem("a1", "Certified Lover Boy", "Drake",
+                "https://i.scdn.co/image/ab67616d00001e02404b901a91d1e4e73e2d67a1", "#148A08"));
+        albumList.add(new AlbumExplorerItem("a2", "SOUR", "Olivia Rodrigo",
+                "https://i.scdn.co/image/ab67616d00001e02613b4c194b12484a0d9b4b0e", "#8D67AB" ));
+        albumList.add(new AlbumExplorerItem("a3", "Midnights", "Taylor Swift",
+                "https://i.scdn.co/image/ab67616d00001e02f92f6943b17c3857db636e78", "#1E3264" ));
 
         albumAdapter.notifyDataSetChanged();
     }
@@ -375,9 +378,12 @@ public class FragmentSearch extends Fragment implements
     private void loadPopularArtists() {
         // 🛑 Nota: Aquí iría la llamada a la API de Spotify (ej. Top Charts de Artistas)
         // Datos de prueba para la UI
-        artistList.add(new ArtistExplorerItem("b1", "Bad Bunny", "https://i.scdn.co/image/b854a88f5043516584281352f205f9226190e292"));
-        artistList.add(new ArtistExplorerItem("b2", "Taylor Swift", "https://i.scdn.co/image/a0a6727218684784918e74187f583cc11942d95b"));
-        artistList.add(new ArtistExplorerItem("b3", "Drake", "https://i.scdn.co/image/ab676161000051745499268d052d9c445a478330"));
+        artistList.add(new ArtistExplorerItem("b1", "Bad Bunny",
+                "https://i.scdn.co/image/b854a88f5043516584281352f205f9226190e292", "#E13444" ));
+        artistList.add(new ArtistExplorerItem("b2", "Taylor Swift",
+                "https://i.scdn.co/image/a0a6727218684784918e74187f583cc11942d95b", "#8D67AB"));
+        artistList.add(new ArtistExplorerItem("b3", "Drake",
+                "https://i.scdn.co/image/ab676161000051745499268d052d9c445a478330", "#148A08"));
 
         artistAdapter.notifyDataSetChanged();
     }

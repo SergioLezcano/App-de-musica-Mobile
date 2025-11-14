@@ -3,7 +3,6 @@ package adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -12,6 +11,7 @@ import com.bumptech.glide.Glide;
 import com.example.appmusic_basico.R;
 import java.util.List;
 import models.AlbumExplorerItem;
+import android.graphics.Color;
 
 public class AlbumExplorerAdapter extends RecyclerView.Adapter<AlbumExplorerAdapter.AlbumViewHolder> {
 
@@ -42,6 +42,15 @@ public class AlbumExplorerAdapter extends RecyclerView.Adapter<AlbumExplorerAdap
 
         // Mostramos el nombre del álbum y el artista
         holder.tvAlbumInfo.setText(album.getAlbumName() + "\n" + album.getArtistName());
+
+        //Aplicar Color de Fondo
+        try {
+            int color = Color.parseColor(album.getBackgroundColorHex());
+            holder.itemView.setBackgroundColor(color);
+        } catch (IllegalArgumentException e) {
+            // Si el código HEX no es válido, usa un color predeterminado
+            holder.itemView.setBackgroundColor(Color.parseColor("#343434"));
+        }
 
         Glide.with(holder.itemView.getContext())
                 .load(album.getImageUrl())

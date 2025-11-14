@@ -1,5 +1,6 @@
 package adapters;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,6 +43,15 @@ public class ArtistExplorerAdapter extends RecyclerView.Adapter<ArtistExplorerAd
         ArtistExplorerItem artist = artistList.get(position);
 
         holder.tvArtistName.setText(artist.getArtistName());
+
+        // 🆕 Aplicar Color de Fondo
+        try {
+            int color = Color.parseColor(artist.getBackgroundColorHex());
+            holder.itemView.setBackgroundColor(color);
+        } catch (IllegalArgumentException e) {
+            // Si el código HEX no es válido, usa un color predeterminado
+            holder.itemView.setBackgroundColor(Color.parseColor("#343434"));
+        }
 
         Glide.with(holder.itemView.getContext())
                 .load(artist.getImageUrl())

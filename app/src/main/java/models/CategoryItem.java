@@ -17,5 +17,5 @@ public class CategoryItem {
     public String getId() { return id; }
     public String getName() { return name; }
     public String getImageUrl() { return imageUrl; }
-    public String getBackgroundColorHex() { return backgroundColorHex; } // 🆕 Nuevo Getter
+    public String getBackgroundColorHex() { return backgroundColorHex; }
 }

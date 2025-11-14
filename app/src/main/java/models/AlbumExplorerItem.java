@@ -5,12 +5,14 @@ public class AlbumExplorerItem {
     private final String albumName;
     private final String artistName;
     private final String imageUrl;
+    private final String backgroundColorHex;
 
-    public AlbumExplorerItem(String id, String albumName, String artistName, String imageUrl) {
+    public AlbumExplorerItem(String id, String albumName, String artistName, String imageUrl, String backgroundColorHex) {
         this.id = id;
         this.albumName = albumName;
         this.artistName = artistName;
         this.imageUrl = imageUrl;
+        this.backgroundColorHex = backgroundColorHex;
     }
 
     // Getters
@@ -18,4 +20,5 @@ public class AlbumExplorerItem {
     public String getAlbumName() { return albumName; }
     public String getArtistName() { return artistName; }
     public String getImageUrl() { return imageUrl; }
+    public String getBackgroundColorHex() { return backgroundColorHex; }
 }
