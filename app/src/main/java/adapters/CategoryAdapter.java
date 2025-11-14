@@ -3,13 +3,14 @@ package adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import android.graphics.Color;
 import com.example.appmusic_basico.R;
 
 import java.util.List;
@@ -33,7 +34,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     @NonNull
     @Override
     public CategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // 🛑 NOTA: Debes crear un layout llamado item_category_card.xml
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_search_all, parent, false);
         return new CategoryViewHolder(view);
@@ -45,12 +45,21 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
         holder.tvCategoryName.setText(category.getName());
 
+        // 🆕 Aplicar Color de Fondo
+        try {
+            int color = Color.parseColor(category.getBackgroundColorHex());
+            holder.itemView.setBackgroundColor(color);
+        } catch (IllegalArgumentException e) {
+            // Si el código HEX no es válido, usa un color predeterminado
+            holder.itemView.setBackgroundColor(Color.parseColor("#343434"));
+        }
+
         Glide.with(holder.itemView.getContext())
                 .load(category.getImageUrl())
                 .placeholder(R.drawable.album_art_placeholder)
                 .centerCrop()
                 .error(R.drawable.album_art_placeholder)
-                .into(holder.ibCategoryImage);
+                .into(holder.ivCategoryImage);
 
         holder.itemView.setOnClickListener(v -> listener.onCategoryClick(category));
     }
@@ -63,13 +72,12 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     // --- ViewHolder ---
     static class CategoryViewHolder extends RecyclerView.ViewHolder {
 
-        ImageButton ibCategoryImage;
+        ImageView ivCategoryImage;
         TextView tvCategoryName;
 
         public CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Asegúrate de que estos IDs existan en item_category_card.xml
-            ibCategoryImage = itemView.findViewById(R.id.iv_image_explored);
+            ivCategoryImage = itemView.findViewById(R.id.iv_image_explored);
             tvCategoryName = itemView.findViewById(R.id.tv_title_target);
         }
     }

@@ -16,9 +16,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appmusic_basico.api.RetrofitClient;
+import com.example.appmusic_basico.api.SpotifyAlbumSearchResponse;
 import com.example.appmusic_basico.api.SpotifyArtistSearchResponse;
 import com.example.appmusic_basico.api.SpotifySearchGeneralResponse;
 import com.example.appmusic_basico.api.SpotifyService;
+import com.example.appmusic_basico.api.SpotifyTrackSearchResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,15 +74,12 @@ public class FragmentSearch extends Fragment implements
         searchView = view.findViewById(R.id.search_view);
         rvSearchResults = view.findViewById(R.id.rv_search_results);
         scrollViewExploration = view.findViewById(R.id.scroll_view_exploration);
-
         rvCategories = view.findViewById(R.id.rv_categories);
-        // 🆕 Inicializar RecyclerView de Álbumes
         rvAlbums = view.findViewById(R.id.rv_albums);
-
         rvArtists = view.findViewById(R.id.rv_artistas);
 
         // 1. Configurar el Manager (Horizontal para tarjetas)
-        rvCategories.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        //rvCategories.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 //        rvAlbums.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
         // 1. Configurar SearchView
@@ -89,9 +88,6 @@ public class FragmentSearch extends Fragment implements
         // 2. Configurar RecyclerView de resultados
         searchAdapter = new SearchResultAdapter(resultsList, this::handleSearchResultClick);
         rvSearchResults.setAdapter(searchAdapter);
-
-        // 3. Opcional: Expandir el SearchView por defecto
-        searchView.setIconified(false);
 
         // 3. Configurar RecyclerViews de Exploración
         setupCategoryRecyclerView();
@@ -177,18 +173,82 @@ public class FragmentSearch extends Fragment implements
         // 1. Procesar Artistas
         if (response.getArtists() != null && response.getArtists().getItems() != null) {
             for (SpotifyArtistSearchResponse.Item item : response.getArtists().getItems()) {
-                // Mapear los resultados a tu modelo unificado (SearchResultItem)
                 String imageUrl = item.getImages() != null && !item.getImages().isEmpty() ? item.getImages().get(0).getUrl() : null;
-                resultsList.add(new SearchResultItem(item.getName(), "Artista", imageUrl, item.getId(), null, "artist"));
+
+                // Artista: Título=Nombre del Artista, Subtítulo="Artista"
+                resultsList.add(new SearchResultItem(
+                        item.getName(),     // title
+                        "Artista",          // subtitle
+                        imageUrl,           // imageUrl
+                        item.getId(),       // spotifyId
+                        null,               // spotifyUri (No aplica para artistas)
+                        "artist"            // type
+                ));
             }
         }
 
-        // 2. Procesar Álbumes (Similar a Artistas, requiere el modelo de Álbum)
+        // --- Separador de lógica ---
 
-        // 3. Procesar Canciones (Similar a Artistas, requiere el modelo de Pistas)
+        // 2. Procesar Álbumes
+        if (response.getAlbums() != null && response.getAlbums().getItems() != null) {
+            for (SpotifyAlbumSearchResponse.Item item : response.getAlbums().getItems()) {
+
+                String artistName = "";
+                if (item.getArtists() != null && !item.getArtists().isEmpty()) {
+                    artistName = item.getArtists().get(0).getName();
+                }
+
+                String imageUrl = null;
+                if (item.getImages() != null && !item.getImages().isEmpty()) {
+                    imageUrl = item.getImages().get(0).getUrl();
+                }
+
+                // Álbum: Título=Nombre del Álbum, Subtítulo=Nombre del Artista
+                resultsList.add(new SearchResultItem(
+                        item.getName(),     // title (Nombre del Álbum)
+                        artistName,         // subtitle (Nombre del Artista)
+                        imageUrl,           // imageUrl
+                        item.getId(),       // spotifyId
+                        item.getUri(),      // spotifyUri
+                        "album"             // type
+                ));
+            }
+        }
+
+        // --- Separador de lógica ---
+
+        // 3. Procesar Canciones (Tracks) 🎶
+        if (response.getTracks() != null && response.getTracks().getItems() != null) {
+            for (SpotifyTrackSearchResponse.Item item : response.getTracks().getItems()) {
+
+                // Obtener el nombre del artista principal
+                String artistName = "";
+                if (item.getArtists() != null && !item.getArtists().isEmpty()) {
+                    artistName = item.getArtists().get(0).getName();
+                }
+
+                // Obtener la URL de la imagen (de la carátula del álbum de la canción)
+                String imageUrl = null;
+                if (item.getAlbum() != null && item.getAlbum().getImages() != null && !item.getAlbum().getImages().isEmpty()) {
+                    imageUrl = item.getAlbum().getImages().get(0).getUrl();
+                }
+
+                // Canción: Título=Nombre de la Canción, Subtítulo=Nombre del Artista
+                resultsList.add(new SearchResultItem(
+                        item.getName(),     // title (Nombre de la Canción)
+                        artistName,         // subtitle (Nombre del Artista)
+                        imageUrl,           // imageUrl (Carátula del álbum)
+                        item.getId(),       // spotifyId
+                        item.getUri(),      // spotifyUri 👈 La canción SÍ tiene URI para reproducción
+                        "track"             // type
+                ));
+            }
+        }
 
         // 4. Mostrar Resultados
         searchAdapter.notifyDataSetChanged();
+
+        // Control de visibilidad
         scrollViewExploration.setVisibility(View.GONE);
         rvSearchResults.setVisibility(View.VISIBLE);
 
@@ -225,13 +285,27 @@ public class FragmentSearch extends Fragment implements
     }
 
     private void loadCategories() {
-        // 🛑 Nota: Aquí iría la llamada a la API de Spotify: /browse/categories
-        // Pero para probar la UI, agregaremos datos de prueba.
+        // 🆕 Usando códigos de color HEX
 
-        categoryList.add(new CategoryItem("pop", "Pop", "https://i.scdn.co/image/ab67706f00000003b688045e7f1c1f5165d79905"));
-        categoryList.add(new CategoryItem("hiphop", "Hip-Hop", "https://i.scdn.co/image/ab67706f00000003666d98e72c01994e634151a7"));
-        categoryList.add(new CategoryItem("rock", "Rock", "https://i.scdn.co/image/ab67706f000000037a44a7f0e65389d54e58b14a"));
-        categoryList.add(new CategoryItem("workout", "Workout", "https://i.scdn.co/image/ab67706f00000003923c65c490a6042469446d61"));
+        // Spotify Colors de ejemplo:
+        // #E13444 (Rojo), #1E3264 (Azul Oscuro), #8D67AB (Morado), #148A08 (Verde)
+
+        categoryList.add(new CategoryItem("pop", "Pop",
+                "https://i.scdn.co/image/ab67706f00000003b688045e7f1c1f5165d79905",
+                "#E13444" // Rojo
+        ));
+        categoryList.add(new CategoryItem("hiphop", "Hip-Hop",
+                "https://i.scdn.co/image/ab67706f00000003666d98e72c01994e634151a7",
+                "#1E3264" // Azul Oscuro
+        ));
+        categoryList.add(new CategoryItem("rock", "Rock",
+                "https://i.scdn.co/image/ab67706f000000037a44a7f0e65389d54e58b14a",
+                "#8D67AB" // Morado
+        ));
+        categoryList.add(new CategoryItem("workout", "Workout",
+                "https://i.scdn.co/image/ab67706f00000003923c65c490a6042469446d61",
+                "#148A08" // Verde
+        ));
 
         categoryAdapter.notifyDataSetChanged();
     }
