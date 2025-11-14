@@ -1,5 +1,6 @@
 package com.example.appmusic_basico;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +22,7 @@ import com.example.appmusic_basico.api.SpotifyArtistSearchResponse;
 import com.example.appmusic_basico.api.SpotifySearchGeneralResponse;
 import com.example.appmusic_basico.api.SpotifyService;
 import com.example.appmusic_basico.api.SpotifyTrackSearchResponse;
+import com.example.appmusic_basico.SecondaryActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,10 +79,6 @@ public class FragmentSearch extends Fragment implements
         rvCategories = view.findViewById(R.id.rv_categories);
         rvAlbums = view.findViewById(R.id.rv_albums);
         rvArtists = view.findViewById(R.id.rv_artistas);
-
-        // 1. Configurar el Manager (Horizontal para tarjetas)
-        //rvCategories.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-//        rvAlbums.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
         // 1. Configurar SearchView
         searchView.setOnQueryTextListener(this);
@@ -258,13 +256,36 @@ public class FragmentSearch extends Fragment implements
     }
 
     private void handleSearchResultClick(SearchResultItem item) {
-        // Implementar la acción al hacer clic en un resultado:
-        // - Si es artista: Abrir SecondaryActivity (Top Tracks)
-        // - Si es álbum: Abrir AlbumDetailActivity
-        // - Si es track: Reproducir la canción
 
         Toast.makeText(getContext(), "Clic en: " + item.getTitle() + " (" + item.getType() + ")", Toast.LENGTH_SHORT).show();
-        // Lógica de reproducción o navegación aquí...
+
+        // Lógica de reproducción o navegación
+        switch (item.getType()) {
+            case "artist":
+                openArtistTopTracks(item.getSpotifyId());
+                break;
+            case "album":
+                // Lógica para abrir AlbumDetailActivity
+                break;
+            case "track":
+                // Lógica para reproducir la canción
+                break;
+        }
+    }
+
+    // 🆕 Método para manejar la navegación a Top Tracks
+    private void openArtistTopTracks(String artistId) {
+        if (getContext() != null) {
+            // 1. Crear el Intent para SecondaryActivity
+            Intent intent = new Intent(getContext(), SecondaryActivity.class);
+
+            // 2. Adjuntar los datos necesarios (ID del artista)
+            // Usamos una clave constante (ej. "ARTIST_ID") para recuperarla en SecondaryActivity
+            intent.putExtra("ARTIST_ID", artistId);
+
+            // 3. Iniciar la actividad
+            startActivity(intent);
+        }
     }
 
     // =========================================================
