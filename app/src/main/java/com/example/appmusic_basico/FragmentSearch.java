@@ -29,6 +29,8 @@ import models.SearchResultItem;
 import adapters.AlbumExplorerAdapter;
 import models.AlbumExplorerItem;
 import models.CategoryItem;
+import adapters.ArtistExplorerAdapter;
+import models.ArtistExplorerItem;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -36,7 +38,8 @@ import retrofit2.Response;
 public class FragmentSearch extends Fragment implements
         SearchView.OnQueryTextListener,
         CategoryAdapter.OnCategoryClickListener,
-        AlbumExplorerAdapter.OnAlbumClickListener {
+        AlbumExplorerAdapter.OnAlbumClickListener,
+        ArtistExplorerAdapter.OnArtistClickListener {
 
     private static final String TAG = "FragmentSearch";
 
@@ -51,6 +54,9 @@ public class FragmentSearch extends Fragment implements
     private RecyclerView rvAlbums;
     private AlbumExplorerAdapter albumAdapter;
     private final List<AlbumExplorerItem> albumList = new ArrayList<>();
+    private RecyclerView rvArtists;
+    private ArtistExplorerAdapter artistAdapter;
+    private final List<ArtistExplorerItem> artistList = new ArrayList<>();
 
     public FragmentSearch() {}
 
@@ -71,6 +77,8 @@ public class FragmentSearch extends Fragment implements
         // 🆕 Inicializar RecyclerView de Álbumes
         rvAlbums = view.findViewById(R.id.rv_albums);
 
+        rvArtists = view.findViewById(R.id.rv_artistas);
+
         // 1. Configurar el Manager (Horizontal para tarjetas)
         rvCategories.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 //        rvAlbums.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
@@ -85,10 +93,15 @@ public class FragmentSearch extends Fragment implements
         // 3. Opcional: Expandir el SearchView por defecto
         searchView.setIconified(false);
 
+        // 3. Configurar RecyclerViews de Exploración
         setupCategoryRecyclerView();
         setupAlbumRecyclerView();
+        setupArtistRecyclerView();
+
+        // 4. Cargar datos de exploración
         loadCategories();
         loadNewAlbums();
+        loadPopularArtists();
     }
 
     // =========================================================
@@ -268,5 +281,41 @@ public class FragmentSearch extends Fragment implements
         // Lógica al hacer clic en una tarjeta de álbum
         // 🛑 Siguiente paso: Abrir la actividad de detalle de álbum (AlbumDetailActivity)
         Toast.makeText(getContext(), "Abriendo álbum: " + album.getAlbumName(), Toast.LENGTH_SHORT).show();
+    }
+
+    // =========================================================
+    // 🆕 Configuración y Carga de Artistas
+    // =========================================================
+
+    private void setupArtistRecyclerView() {
+        rvArtists.setLayoutManager(new LinearLayoutManager(
+                getContext(),
+                LinearLayoutManager.HORIZONTAL,
+                false
+        ));
+
+        artistAdapter = new ArtistExplorerAdapter(artistList, this); // 'this' implementa OnArtistClickListener
+        rvArtists.setAdapter(artistAdapter);
+    }
+
+    private void loadPopularArtists() {
+        // 🛑 Nota: Aquí iría la llamada a la API de Spotify (ej. Top Charts de Artistas)
+        // Datos de prueba para la UI
+        artistList.add(new ArtistExplorerItem("b1", "Bad Bunny", "https://i.scdn.co/image/b854a88f5043516584281352f205f9226190e292"));
+        artistList.add(new ArtistExplorerItem("b2", "Taylor Swift", "https://i.scdn.co/image/a0a6727218684784918e74187f583cc11942d95b"));
+        artistList.add(new ArtistExplorerItem("b3", "Drake", "https://i.scdn.co/image/ab676161000051745499268d052d9c445a478330"));
+
+        artistAdapter.notifyDataSetChanged();
+    }
+
+    // =========================================================
+    // 🆕 Implementación del Click de Artista
+    // =========================================================
+
+    @Override
+    public void onArtistClick(ArtistExplorerItem artist) {
+        // Lógica al hacer clic en una tarjeta de artista
+        // 🛑 Siguiente paso: Abrir SecondaryActivity para ver los Top Tracks del artista
+        Toast.makeText(getContext(), "Abriendo artista: " + artist.getArtistName(), Toast.LENGTH_SHORT).show();
     }
 }
