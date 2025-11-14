@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:padding="8dp"
+    android:paddingTop="12dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ScrollView
+        android:id="@+id/sv_contenedor_album_detalle"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:scrollbars="vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:layout_marginTop="24dp">
+
+                <ImageView
+                    android:id="@+id/iv_album_detalle"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:scaleType="centerCrop"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:src="@drawable/image_2930"
+                    android:contentDescription="Imagen del album">
+
+                </ImageView>
+
+                <!-- Boton de Volver -->
+
+                <FrameLayout
+                    android:id="@+id/fl_contenedor_btn_volver"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <ImageButton
+                        android:id="@+id/iv_btnVolver"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/arrow_back_24dp"
+                        android:background="@drawable/bg_rounded_image"
+                        android:contentDescription="Boton Volver">
+
+                    </ImageButton>
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tv_album_nombre"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:contentDescription="Titulo del Album"
+                    android:orientation="vertical"
+                    android:text="Album"
+                    android:textAlignment="center"
+                    android:textColor="@color/bottom_nav_bg"
+                    android:textStyle="bold"
+                    android:textSize="20dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.498"
+                    app:layout_constraintStart_toStartOf="parent">
+
+                </TextView>
+
+                <TextView
+                    android:id="@+id/tv_artista_nombre"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:textAlignment="center"
+                    android:text="Artista"
+                    android:textColor="@color/bottom_nav_bg"
+                    app:layout_constraintTop_toBottomOf="tv_album_nombre"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:contentDescription="Nombre del artista">
+
+                </TextView>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <LinearLayout
+                android:id="@+id/ly_contenedor_btnPlay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <FrameLayout
+                    android:id="@+id/fl_contenedor_btnPlay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp">
+
+                    <ImageButton
+                        android:id="@+id/ib_btnPlay_Pause"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:src="@drawable/play_arrow_24dp"
+                        android:background="@drawable/bg_circle_button"
+                        android:contentDescription="Boton Play"
+                        >
+
+                    </ImageButton>
+
+                </FrameLayout>
+
+                <ImageButton
+                    android:id="@+id/ib_btn_aleatorio"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    style="@style/PlayerControlButton"
+                    android:background="@color/card_dark"
+                    android:src="@drawable/shuffle_24dp"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginStart="10dp"
+                    android:contentDescription="Boton aleatorio">
+
+                </ImageButton>
+
+            </LinearLayout>
+
+            <!-- 3. Sección: Canciones -->
+
+            <TextView
+                android:id="@+id/tv_titulo_canciones_album"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lista de canciones"
+                android:layout_marginTop="16dp"
+                android:textSize="16dp"
+                android:textColor="@color/white"
+                android:textStyle="bold">
+
+            </TextView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_contenedor_canciones_album"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:clipToPadding="false"
+                android:layout_marginTop="8dp"
+                android:paddingTop="16dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager">
+            </androidx.recyclerview.widget.RecyclerView>
+
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <include
+        layout="@layout/mini_player_bar"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

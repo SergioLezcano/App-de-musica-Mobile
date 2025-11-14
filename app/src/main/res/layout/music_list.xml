@@ -157,7 +157,7 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- 3. Sección: Canciones Populares -->
+            <!-- 3. Sección: Canciones -->
 
             <TextView
                 android:id="@+id/tv_title_seccion_popular"
