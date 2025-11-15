@@ -43,21 +43,22 @@ public class AlbumExplorerAdapter extends RecyclerView.Adapter<AlbumExplorerAdap
         // Mostramos el nombre del álbum y el artista
         holder.tvAlbumInfo.setText(album.getAlbumName() + "\n" + album.getArtistName());
 
-        //Aplicar Color de Fondo
+        // 🆕 Aplicar Color de Fondo al CardView
         try {
             int color = Color.parseColor(album.getBackgroundColorHex());
-            holder.itemView.setBackgroundColor(color);
+            // ¡CAMBIO AQUÍ! Aplicar el color a la tarjeta principal
+            holder.cardCategoryItem.setCardBackgroundColor(color);
         } catch (IllegalArgumentException e) {
             // Si el código HEX no es válido, usa un color predeterminado
-            holder.itemView.setBackgroundColor(Color.parseColor("#343434"));
+            holder.cardCategoryItem.setCardBackgroundColor(Color.parseColor("#343434"));
         }
 
-        Glide.with(holder.itemView.getContext())
-                .load(album.getImageUrl())
-                .placeholder(R.drawable.album_art_placeholder)
-                .centerCrop()
-                .error(R.drawable.album_art_placeholder)
-                .into(holder.ivAlbumImage);
+//        Glide.with(holder.itemView.getContext())
+//                .load(album.getImageUrl())
+//                .placeholder(R.drawable.album_art_placeholder)
+//                .centerCrop()
+//                .error(R.drawable.album_art_placeholder)
+//                .into(holder.ivAlbumImage);
 
         holder.itemView.setOnClickListener(v -> listener.onAlbumClick(album));
     }
@@ -69,13 +70,13 @@ public class AlbumExplorerAdapter extends RecyclerView.Adapter<AlbumExplorerAdap
 
     // --- ViewHolder ---
     static class AlbumViewHolder extends RecyclerView.ViewHolder {
-        // Usamos los IDs del layout item_category_card.xml
-        ImageView ivAlbumImage;
-        TextView tvAlbumInfo; // Renombramos el TextView para reflejar el contenido del álbum
+        androidx.cardview.widget.CardView cardCategoryItem;
+        TextView tvAlbumInfo;
 
         public AlbumViewHolder(@NonNull View itemView) {
             super(itemView);
-            ivAlbumImage = itemView.findViewById(R.id.iv_image_explored);
+
+            cardCategoryItem = itemView.findViewById(R.id.card_category_item);
             tvAlbumInfo = itemView.findViewById(R.id.tv_title_target);
 
             // 💡 Opcional: Ajustar el tamaño del texto para que quepan dos líneas

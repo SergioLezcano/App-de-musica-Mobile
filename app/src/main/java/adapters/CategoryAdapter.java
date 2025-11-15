@@ -45,21 +45,21 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
         holder.tvCategoryName.setText(category.getName());
 
-        // 🆕 Aplicar Color de Fondo
+        // 🆕 Aplicar Color de Fondo al CardView
         try {
             int color = Color.parseColor(category.getBackgroundColorHex());
-            holder.itemView.setBackgroundColor(color);
+            holder.cardCategoryItem.setCardBackgroundColor(color);
         } catch (IllegalArgumentException e) {
             // Si el código HEX no es válido, usa un color predeterminado
-            holder.itemView.setBackgroundColor(Color.parseColor("#343434"));
+            holder.cardCategoryItem.setCardBackgroundColor(Color.parseColor("#343434"));
         }
 
-        Glide.with(holder.itemView.getContext())
-                .load(category.getImageUrl())
-                .placeholder(R.drawable.album_art_placeholder)
-                .centerCrop()
-                .error(R.drawable.album_art_placeholder)
-                .into(holder.ivCategoryImage);
+//        Glide.with(holder.itemView.getContext())
+//                .load(category.getImageUrl())
+//                .placeholder(R.drawable.album_art_placeholder)
+//                .centerCrop()
+//                .error(R.drawable.album_art_placeholder)
+//                .into(holder.ivCategoryImage);
 
         holder.itemView.setOnClickListener(v -> listener.onCategoryClick(category));
     }
@@ -72,12 +72,12 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     // --- ViewHolder ---
     static class CategoryViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView ivCategoryImage;
+        androidx.cardview.widget.CardView cardCategoryItem;
         TextView tvCategoryName;
 
         public CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
-            ivCategoryImage = itemView.findViewById(R.id.iv_image_explored);
+            cardCategoryItem = itemView.findViewById(R.id.card_category_item);
             tvCategoryName = itemView.findViewById(R.id.tv_title_target);
         }
     }

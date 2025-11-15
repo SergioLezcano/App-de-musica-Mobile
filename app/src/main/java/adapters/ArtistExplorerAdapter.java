@@ -32,7 +32,7 @@ public class ArtistExplorerAdapter extends RecyclerView.Adapter<ArtistExplorerAd
     @NonNull
     @Override
     public ArtistViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Reutilizamos el layout de la tarjeta de exploración
+
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_search_all, parent, false);
         return new ArtistViewHolder(view);
@@ -44,22 +44,23 @@ public class ArtistExplorerAdapter extends RecyclerView.Adapter<ArtistExplorerAd
 
         holder.tvArtistName.setText(artist.getArtistName());
 
-        // 🆕 Aplicar Color de Fondo
+        // 🆕 Aplicar Color de Fondo al CardView
         try {
             int color = Color.parseColor(artist.getBackgroundColorHex());
-            holder.itemView.setBackgroundColor(color);
+            // ¡CAMBIO AQUÍ! Aplicar el color a la tarjeta principal
+            holder.cardCategoryItem.setCardBackgroundColor(color);
         } catch (IllegalArgumentException e) {
             // Si el código HEX no es válido, usa un color predeterminado
-            holder.itemView.setBackgroundColor(Color.parseColor("#343434"));
+            holder.cardCategoryItem.setCardBackgroundColor(Color.parseColor("#343434"));
         }
 
-        Glide.with(holder.itemView.getContext())
-                .load(artist.getImageUrl())
-                .placeholder(R.drawable.album_art_placeholder)
-                // 🛑 CRÍTICO: Transformación a circular para artistas
-                .transform(new CircleCrop())
-                .error(R.drawable.album_art_placeholder)
-                .into(holder.ivArtistImage);
+//        Glide.with(holder.itemView.getContext())
+//                .load(artist.getImageUrl())
+//                .placeholder(R.drawable.album_art_placeholder)
+//                // 🛑 CRÍTICO: Transformación a circular para artistas
+//                .transform(new CircleCrop())
+//                .error(R.drawable.album_art_placeholder)
+//                .into(holder.ivArtistImage);
 
         holder.itemView.setOnClickListener(v -> listener.onArtistClick(artist));
     }
@@ -71,13 +72,13 @@ public class ArtistExplorerAdapter extends RecyclerView.Adapter<ArtistExplorerAd
 
     // --- ViewHolder ---
     static class ArtistViewHolder extends RecyclerView.ViewHolder {
-        // Usamos los IDs del layout item_category_card.xml
-        ImageView ivArtistImage;
+
+        androidx.cardview.widget.CardView cardCategoryItem;
         TextView tvArtistName;
 
         public ArtistViewHolder(@NonNull View itemView) {
             super(itemView);
-            ivArtistImage = itemView.findViewById(R.id.iv_image_explored);
+            cardCategoryItem = itemView.findViewById(R.id.card_category_item);
             tvArtistName = itemView.findViewById(R.id.tv_title_target);
         }
     }

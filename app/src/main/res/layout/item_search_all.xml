@@ -1,32 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:padding="8dp"
+    android:id="@+id/card_category_item" android:layout_width="140dp"
+    android:layout_height="140dp"
     android:layout_margin="10dp"
+    app:cardCornerRadius="8dp" app:cardElevation="4dp"
+    tools:background="#000000"> <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#000000">
-
-    <ImageView
-        android:id="@+id/iv_image_explored"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:scaleType="centerCrop"
-        android:layout_gravity="center_horizontal"
-        android:contentDescription="Carátula de Categoría"/>
+    android:padding="8dp">
 
     <TextView
         android:id="@+id/tv_title_target"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxWidth="120dp"
-        android:textColor="@color/white"
+        android:textColor="@android:color/white"
         android:textSize="14sp"
         android:textStyle="bold"
         android:maxLines="1"
         android:ellipsize="end"
         android:textAlignment="center"
         tools:text="CardView"/>
-
 </LinearLayout>
+
+</androidx.cardview.widget.CardView>
