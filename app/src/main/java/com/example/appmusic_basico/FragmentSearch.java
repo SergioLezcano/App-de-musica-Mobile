@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.appmusic_basico.api.RetrofitClient;
 import com.example.appmusic_basico.api.SpotifyAlbumSearchResponse;
 import com.example.appmusic_basico.api.SpotifyArtistSearchResponse;
+import com.example.appmusic_basico.api.SpotifyCategoriesResponse;
 import com.example.appmusic_basico.api.SpotifySearchGeneralResponse;
 import com.example.appmusic_basico.api.SpotifyService;
 import com.example.appmusic_basico.api.SpotifyTrackSearchResponse;
@@ -27,8 +28,13 @@ import com.example.appmusic_basico.SecondaryActivity;
 import java.util.ArrayList;
 import java.util.List;
 
+import adapters.AlbumAdapter;
 import adapters.CategoryAdapter;
 import adapters.SearchResultAdapter;
+import models.AlbumItem;
+import models.ArtistItem;
+import models.ArtistsResponse;
+import models.NewReleasesResponse;
 import models.SearchResultItem;
 import adapters.AlbumExplorerAdapter;
 import models.AlbumExplorerItem;
@@ -46,7 +52,6 @@ public class FragmentSearch extends Fragment implements
         ArtistExplorerAdapter.OnArtistClickListener {
 
     private static final String TAG = "FragmentSearch";
-
     private SearchView searchView;
     private RecyclerView rvSearchResults;
     private ScrollView scrollViewExploration;
@@ -56,14 +61,13 @@ public class FragmentSearch extends Fragment implements
     private CategoryAdapter categoryAdapter;
     private final List<CategoryItem> categoryList = new ArrayList<>();
     private RecyclerView rvAlbums;
-    private AlbumExplorerAdapter albumAdapter;
+    private AlbumExplorerAdapter albumExplorerAdapter;
     private final List<AlbumExplorerItem> albumList = new ArrayList<>();
     private RecyclerView rvArtists;
     private ArtistExplorerAdapter artistAdapter;
     private final List<ArtistExplorerItem> artistList = new ArrayList<>();
 
     public FragmentSearch() {}
-
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -94,6 +98,7 @@ public class FragmentSearch extends Fragment implements
         setupArtistRecyclerView();
 
         // 4. Cargar datos de exploración
+
         loadCategories();
         loadNewAlbums();
         loadPopularArtists();
@@ -344,29 +349,48 @@ public class FragmentSearch extends Fragment implements
     }
 
     private void loadCategories() {
-        // 🆕 Usando códigos de color HEX
+        // 🛑 Nota: Si el token no está listo, el método no se ejecuta.
+        if (MainActivity.spotifyAccessToken == null) {
+            Log.w(TAG, "⚠️ Token no disponible. Categorías no cargadas.");
+            return;
+        }
 
-        // Spotify Colors de ejemplo:
-        // #E13444 (Rojo), #1E3264 (Azul Oscuro), #8D67AB (Morado), #148A08 (Verde)
+        SpotifyService api = RetrofitClient.getClient().create(SpotifyService.class);
 
-        categoryList.add(new CategoryItem("pop", "Pop",
-                "https://i.scdn.co/image/ab67706f00000003b688045e7f1c1f5165d79905",
-                "#E13444" // Rojo
-        ));
-        categoryList.add(new CategoryItem("hiphop", "Hip-Hop",
-                "https://i.scdn.co/image/ab67706f00000003666d98e72c01994e634151a7",
-                "#1E3264" // Azul Oscuro
-        ));
-        categoryList.add(new CategoryItem("rock", "Rock",
-                "https://i.scdn.co/image/ab67706f000000037a44a7f0e65389d54e58b14a",
-                "#8D67AB" // Morado
-        ));
-        categoryList.add(new CategoryItem("workout", "Workout",
-                "https://i.scdn.co/image/ab67706f00000003923c65c490a6042469446d61",
-                "#148A08" // Verde
-        ));
+        // Usamos "US" como mercado por defecto para asegurar que haya contenido
+        api.getAllCategories("Bearer " + MainActivity.spotifyAccessToken, "US", 50)
+                .enqueue(new Callback<SpotifyCategoriesResponse>() {
+                    @Override
+                    public void onResponse(Call<SpotifyCategoriesResponse> call, Response<SpotifyCategoriesResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
 
-        categoryAdapter.notifyDataSetChanged();
+                            // 🟢 ÉXITO: Los datos se reciben
+                            categoryList.clear();
+
+                            if (response.body().getCategories() != null && response.body().getCategories().getItems() != null) {
+                                for (SpotifyCategoriesResponse.Categories.Item item : response.body().getCategories().getItems()) {
+                                    Log.d("CAT-ID", "ID recibido: " + item.getId() + " Name: " + item.getName());
+                                    categoryList.add(new CategoryItem(
+                                            item.getId(),           // ID de la API
+                                            item.getName(),         // Nombre de la API
+                                            generateRandomColor()   // Color dinámico
+                                    ));
+                                }
+                                Log.d(TAG, "✅ Categorías cargadas desde la API: " + categoryList.size());
+                            }
+
+                        } else {
+                            Log.e(TAG, "❌ Fallo HTTP al cargar categorías: " + response.code());
+                            // Aquí podrías llamar a un método loadHardcodedCategories() si deseas un fallback.
+                        }
+                        categoryAdapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onFailure(Call<SpotifyCategoriesResponse> call, Throwable t) {
+                        Log.e(TAG, "❌ Fallo de red al cargar categorías: " + t.getMessage());
+                    }
+                });
     }
 
     // =========================================================
@@ -375,9 +399,27 @@ public class FragmentSearch extends Fragment implements
 
     @Override
     public void onCategoryClick(CategoryItem category) {
-        // Lógica al hacer clic en una tarjeta de categoría
-        // 🛑 Siguiente paso: Abrir una lista de reproducción basada en category.getId()
         Toast.makeText(getContext(), "Abriendo categoría: " + category.getName(), Toast.LENGTH_SHORT).show();
+//        Log.d("CAT-CLICK", "Click en categoría: " + category.getId());
+//        // 1. Crear el Fragmento de Destino
+//        FragmentCategorySong categorySongFragment = new FragmentCategorySong();
+//
+//        // 2. Preparar los argumentos para pasar el ID de la categoría
+//        Bundle args = new Bundle();
+//        // Usamos la clave "CATEGORY_ID" que FragmentCategorySong espera
+//        args.putString("CATEGORY_ID", category.getId());
+//        categorySongFragment.setArguments(args);
+//
+//        // 3. Realizar la Transacción del Fragmento usando el FragmentManager de la Activity
+//        if (getActivity() != null) {
+//            getActivity().getSupportFragmentManager()
+//                    .beginTransaction()
+//                    .replace(R.id.fragment_container, categorySongFragment)
+//                    .addToBackStack(null)
+//                    .commit();
+//
+//            Toast.makeText(getContext(), "Abriendo categoría: " + category.getName(), Toast.LENGTH_SHORT).show();
+//        }
     }
 
     // =========================================================
@@ -391,21 +433,95 @@ public class FragmentSearch extends Fragment implements
                 false
         ));
 
-        albumAdapter = new AlbumExplorerAdapter(albumList, this); // 'this' implementa OnAlbumClickListener
-        rvAlbums.setAdapter(albumAdapter);
+        albumExplorerAdapter = new AlbumExplorerAdapter(albumList, this); // 'this' implementa OnAlbumClickListener
+        rvAlbums.setAdapter(albumExplorerAdapter);
     }
 
     private void loadNewAlbums() {
-        // 🛑 Nota: Aquí iría la llamada a la API de Spotify: /browse/new-releases
-        // Datos de prueba para la UI
-        albumList.add(new AlbumExplorerItem("a1", "Certified Lover Boy", "Drake",
-                "https://i.scdn.co/image/ab67616d00001e02404b901a91d1e4e73e2d67a1", "#148A08"));
-        albumList.add(new AlbumExplorerItem("a2", "SOUR", "Olivia Rodrigo",
-                "https://i.scdn.co/image/ab67616d00001e02613b4c194b12484a0d9b4b0e", "#8D67AB" ));
-        albumList.add(new AlbumExplorerItem("a3", "Midnights", "Taylor Swift",
-                "https://i.scdn.co/image/ab67616d00001e02f92f6943b17c3857db636e78", "#1E3264" ));
+        if (MainActivity.spotifyAccessToken == null) return;
 
-        albumAdapter.notifyDataSetChanged();
+        SpotifyService api = RetrofitClient.getClient().create(SpotifyService.class);
+
+        String countryCode = "US";
+
+        api.getNewReleases("Bearer " + MainActivity.spotifyAccessToken, countryCode, 20)
+                .enqueue(new Callback<NewReleasesResponse>() {
+                    @Override
+                    public void onResponse(Call<NewReleasesResponse> call, Response<NewReleasesResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+
+                            albumList.clear(); // Limpiar la lista anterior
+
+                            List<AlbumItem> newReleasesFromApi = response.body().getAlbums().getItems();
+
+                            for (AlbumItem apiItem : newReleasesFromApi) {
+                                // 💡 Lógica de mapeo: Convertir el modelo de la API al modelo de la UI
+                                String artistName = (apiItem.getArtists() != null && !apiItem.getArtists().isEmpty())
+                                        ? apiItem.getArtists().get(0).getName()
+                                        : "Artista Desconocido";
+
+                                String imageUrl = (apiItem.getImages() != null && !apiItem.getImages().isEmpty())
+                                        ? apiItem.getImages().get(0).getUrl()
+                                        : null;
+
+                                albumList.add(new AlbumExplorerItem(
+                                        apiItem.getId(),           // ID del Álbum
+                                        apiItem.getName(),         // Nombre del Álbum
+                                        artistName,                // Nombre del Artista
+                                        imageUrl,                  // Carátula
+                                        generateRandomColor()      // Color de la tarjeta
+                                ));
+                            }
+
+                            albumExplorerAdapter.notifyDataSetChanged();
+
+                        } else {
+                            Log.e(TAG, "Fallo al cargar álbumes: " + response.code());
+                            try {
+                                Log.e(TAG, "❌ Error HTTP al cargar álbumes: " + response.code() + " - " + response.errorBody().string());
+                            } catch (Exception e) {
+                                Log.e(TAG, "❌ Error HTTP: " + response.code());
+                            }
+                            // Manejar errores (ej. mostrar un Toast o un mensaje en la UI)
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<NewReleasesResponse> call, Throwable t) {
+                        Log.e(TAG, "❌ Fallo de red al cargar álbumes: " + t.getMessage());
+                    }
+                });
+    }
+
+    public void reloadExplorationData() {
+        Log.d(TAG, "Recarga forzada de datos de exploración.");
+        loadNewAlbums();
+        loadPopularArtists();
+        loadCategories();
+    }
+
+    private String generateRandomColor() {
+        // 1. Inicializa la clase Random
+        java.util.Random random = new java.util.Random();
+
+        // 2. Genera un número entero aleatorio.
+        // Usamos el bitwise AND (&) con 0xCCCCCC para enmascarar el color.
+        // 💡 NOTA: En lugar de usar 0xFFFFFF (que puede generar colores muy blancos/pálidos),
+        // usar un valor más bajo como 0xCCCCCC (un gris claro) como máximo
+        // ayuda a asegurar que los colores resultantes sean más oscuros y tengan
+        // mejor contraste con el texto claro (si lo usas) o sean visualmente más ricos.
+        int color = 0xFF000000 | (0xFFFFFF & random.nextInt());
+
+        // Si quieres un enfoque más simple que asegura mejor contraste con texto BLANCO,
+        // podrías limitar el valor para obtener colores más oscuros:
+        // int color = 0xFF000000 + random.nextInt(0xAA0000);
+
+        // 3. Convierte el entero a su representación hexadecimal.
+        // %06X asegura que el número se formatee con 6 dígitos hexadecimales, rellenando con ceros.
+        // Usamos color & 0xFFFFFF para ignorar el canal alfa si es necesario
+        String hexColor = String.format("#%06X", (color & 0xFFFFFF));
+
+        return hexColor;
     }
 
     // =========================================================
@@ -414,9 +530,20 @@ public class FragmentSearch extends Fragment implements
 
     @Override
     public void onAlbumClick(AlbumExplorerItem album) {
-        // Lógica al hacer clic en una tarjeta de álbum
-        // 🛑 Siguiente paso: Abrir la actividad de detalle de álbum (AlbumDetailActivity)
-        Toast.makeText(getContext(), "Abriendo álbum: " + album.getAlbumName(), Toast.LENGTH_SHORT).show();
+        if (getContext() != null) {
+            // Asumiendo que AlbumDetalleActivity es la clase correcta para el detalle
+            Intent intent = new Intent(getContext(), AlbumDetalleActivity.class);
+
+            // Pasamos los datos esenciales del álbum a la nueva Activity
+            intent.putExtra("ALBUM_ID", album.getId());
+            intent.putExtra("ALBUM_URI", (String) null);
+            intent.putExtra("ALBUM_NAME", album.getAlbumName());
+            intent.putExtra("ARTIST_NAME", album.getArtistName());
+            intent.putExtra("ALBUM_IMAGE_URL", album.getImageUrl());
+
+            startActivity(intent);
+            Toast.makeText(getContext(), "Abriendo álbum: " + album.getAlbumName(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     // =========================================================
@@ -434,16 +561,68 @@ public class FragmentSearch extends Fragment implements
         rvArtists.setAdapter(artistAdapter);
     }
 
-    private void loadPopularArtists() {
-        // 🛑 Nota: Aquí iría la llamada a la API de Spotify (ej. Top Charts de Artistas)
-        // Datos de prueba para la UI
-        artistList.add(new ArtistExplorerItem("b1", "Bad Bunny",
-                "https://i.scdn.co/image/b854a88f5043516584281352f205f9226190e292", "#E13444" ));
-        artistList.add(new ArtistExplorerItem("b2", "Taylor Swift",
-                "https://i.scdn.co/image/a0a6727218684784918e74187f583cc11942d95b", "#8D67AB"));
-        artistList.add(new ArtistExplorerItem("b3", "Drake",
-                "https://i.scdn.co/image/ab676161000051745499268d052d9c445a478330", "#148A08"));
+    // FragmentSearch.java
 
+    private void loadPopularArtists() {
+        if (MainActivity.spotifyAccessToken == null) return;
+
+        // 1. Definir la lista de IDs que quieres buscar
+        List<String> artistIdList = new ArrayList<>();
+        artistIdList.add("0h1zs4CTlU9D2QtgPxptUD");
+        artistIdList.add("1DxLCyH42yaHKGK3cl5bvG");
+        artistIdList.add("4bw2Am3p9ji3mYsXNXtQcd");
+        artistIdList.add("0AqlFI0tz2DsEoJlKSIiT9");
+        artistIdList.add("3ghRXw2nUEH2THaL82hw8R");
+        artistIdList.add("5C4PDR4LnhZTbVnKWXuDKD");
+
+        String popularArtistIds = String.join(",", artistIdList);
+        // Si la lista está vacía, salimos
+        if (popularArtistIds.isEmpty()) return;
+
+        SpotifyService api = RetrofitClient.getClient().create(SpotifyService.class);
+
+        api.getMultipleArtists("Bearer " + MainActivity.spotifyAccessToken, popularArtistIds)
+                .enqueue(new Callback<ArtistsResponse>() {
+                    @Override
+                    public void onResponse(Call<ArtistsResponse> call, Response<ArtistsResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            artistList.clear();
+
+                            // Asegúrate de que ArtistsResponse tenga getArtists()
+                            for (ArtistItem apiItem : response.body().getArtists()) {
+
+                                // 💡 Lógica de mapeo similar a loadNewAlbums()
+                                String imageUrl = (apiItem.getImages() != null && !apiItem.getImages().isEmpty())
+                                        ? apiItem.getImages().get(0).getUrl()
+                                        : null;
+
+                                artistList.add(new ArtistExplorerItem(
+                                        apiItem.getId(),           // ID del Artista
+                                        apiItem.getName(),         // Nombre del Artista
+                                        imageUrl,                  // Imagen
+                                        generateRandomColor()      // Color de la tarjeta
+                                ));
+                            }
+                            artistAdapter.notifyDataSetChanged();
+                            Log.d(TAG, "✅ Artistas recibidos: " + artistList.size());
+                        } else {
+                            Log.e(TAG, "❌ Error API al cargar artistas: " + response.code());
+                            loadHardcodedArtists(); // ⬅️ Mantener fallback
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ArtistsResponse> call, Throwable t) {
+                        Log.e(TAG, "❌ Fallo de red al cargar artistas: " + t.getMessage());
+                        loadHardcodedArtists(); // ⬅️ Mantener fallback
+                    }
+                });
+    }
+
+    // 💡 Debes crear este método para tu lógica hardcodeada/fallback
+    private void loadHardcodedArtists() {
+        artistList.clear();
+        artistList.add(new ArtistExplorerItem("b1", "Bad Bunny", "url_img", generateRandomColor()));
+        // ...
         artistAdapter.notifyDataSetChanged();
     }
 
@@ -453,8 +632,18 @@ public class FragmentSearch extends Fragment implements
 
     @Override
     public void onArtistClick(ArtistExplorerItem artist) {
-        // Lógica al hacer clic en una tarjeta de artista
-        // 🛑 Siguiente paso: Abrir SecondaryActivity para ver los Top Tracks del artista
-        Toast.makeText(getContext(), "Abriendo artista: " + artist.getArtistName(), Toast.LENGTH_SHORT).show();
+        // Se usa SecondaryActivity para mostrar los Top Tracks, como se define en el código
+        if (getContext() != null) {
+            Intent intent = new Intent(getContext(), SecondaryActivity.class);
+
+            // Adjuntar los datos necesarios (ID y nombre del artista)
+
+            intent.putExtra("ARTIST_ID", artist.getId());
+            intent.putExtra("ARTIST_NAME", artist.getArtistName());
+
+            startActivity(intent);
+            Toast.makeText(getContext(), "Abriendo artista: " + artist.getArtistName(), Toast.LENGTH_SHORT).show();
+        }
     }
+
 }

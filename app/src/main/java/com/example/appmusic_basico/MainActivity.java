@@ -230,6 +230,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 case TOKEN:
                     spotifyAccessToken = response.getAccessToken();
                     connectSpotifyRemote(true);
+                    notifyFragmentSearchToLoad();
                     break;
                 case ERROR:
                     Toast.makeText(this, "Error de autenticación: " + response.getError(), Toast.LENGTH_LONG).show();
@@ -361,4 +362,22 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static SpotifyAppRemote getSpotifyAppRemote() {
         return mSpotifyAppRemote;
     }
+
+    // 💡 Nuevo: Método para notificar al Fragmento de Búsqueda
+    public void notifyFragmentSearchToLoad() {
+        // 1. Obtener el fragmento por su etiqueta (tag)
+        Fragment searchFragment = getSupportFragmentManager().findFragmentByTag("SearchFragment");
+
+        // 2. Verificar que el fragmento existe y es del tipo correcto
+        if (searchFragment instanceof FragmentSearch) {
+            FragmentSearch fragmentSearch = (FragmentSearch) searchFragment;
+
+            // 3. Llamar al método de recarga del fragmento
+            fragmentSearch.reloadExplorationData();
+        } else {
+            // Esto solo ocurre si el fragmento aún no se ha inicializado o si la etiqueta es incorrecta
+            Log.w("MainActivity", "⚠️ FragmentSearch no encontrado o no está adjunto para notificación.");
+        }
+    }
+
 }

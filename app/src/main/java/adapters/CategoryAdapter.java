@@ -3,15 +3,13 @@ package adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.bumptech.glide.Glide;
 import android.graphics.Color;
 import com.example.appmusic_basico.R;
+import androidx.cardview.widget.CardView;
 
 import java.util.List;
 
@@ -54,13 +52,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             holder.cardCategoryItem.setCardBackgroundColor(Color.parseColor("#343434"));
         }
 
-//        Glide.with(holder.itemView.getContext())
-//                .load(category.getImageUrl())
-//                .placeholder(R.drawable.album_art_placeholder)
-//                .centerCrop()
-//                .error(R.drawable.album_art_placeholder)
-//                .into(holder.ivCategoryImage);
-
         holder.itemView.setOnClickListener(v -> listener.onCategoryClick(category));
     }
 
@@ -72,7 +63,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     // --- ViewHolder ---
     static class CategoryViewHolder extends RecyclerView.ViewHolder {
 
-        androidx.cardview.widget.CardView cardCategoryItem;
+        CardView cardCategoryItem;
         TextView tvCategoryName;
 
         public CategoryViewHolder(@NonNull View itemView) {

@@ -1,5 +1,7 @@
 package com.example.appmusic_basico.api;
 
+import models.ArtistsResponse;
+import models.NewReleasesResponse;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
@@ -49,5 +51,34 @@ public interface SpotifyService {
     Call<SpotifyAlbumTracksResponse> getAlbumTracks(
             @Header("Authorization") String authHeader,
             @Path("id") String albumId
+    );
+
+    @GET("browse/categories/{category_id}/playlists")
+    Call<CategoryPlaylistResponse> getCategoryPlaylists(
+            @Header("Authorization") String authHeader,
+            @Path("category_id") String categoryId,
+            @Query("country") String country,
+            @Query("limit") int limit
+    );
+
+    @GET("browse/categories")
+    Call<SpotifyCategoriesResponse> getAllCategories(
+            @Header("Authorization") String token,
+            @Query("country") String country,
+            @Query("limit") int limit
+    );
+
+    @GET("browse/new-releases")
+    Call<NewReleasesResponse> getNewReleases(
+            @Header("Authorization") String authorization,
+            @Query("country") String country,
+            @Query("limit") int limit
+    );
+
+    // Endpoint para obtener la información de MÚLTIPLES artistas
+    @GET("artists")
+    Call<ArtistsResponse> getMultipleArtists(
+            @Header("Authorization") String authHeader,
+            @Query("ids") String artistIds // Ej: "artistId1,artistId2,artistId3"
     );
 }

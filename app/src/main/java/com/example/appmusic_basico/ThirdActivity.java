@@ -17,7 +17,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 
-
 import com.bumptech.glide.Glide;
 import com.example.appmusic_basico.api.RetrofitClient;
 import com.example.appmusic_basico.api.SpotifyArtistSearchResponse;
@@ -36,7 +35,6 @@ import java.util.List;
 import models.AlbumFavorito;
 import models.Artistas;
 import models.SpotifyAlbumDetailsResponse;
-import models.SpotifyArtistDetailsResponse;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

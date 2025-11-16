@@ -52,6 +52,4 @@
             android:paddingBottom="8dp"
             android:textAlignment="center"/>
 
-
-
 </LinearLayout>

@@ -12,8 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
+        app:layout_constraintTop_toTopOf="parent"
+        android:scrollbars="none">
 
         <LinearLayout
             android:id="@+id/ly_cont_lista_categoria"
@@ -41,12 +41,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
-                android:orientation="horizontal"
-                app:spanCount="3"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                tools:listitem="@layout/item_recently_played">
+                tools:listitem="@layout/item_grid_card">
 
             </androidx.recyclerview.widget.RecyclerView>
 

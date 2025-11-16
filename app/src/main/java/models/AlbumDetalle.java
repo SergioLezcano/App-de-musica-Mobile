@@ -5,7 +5,6 @@ public class AlbumDetalle {
     private final Cancion_Reciente track; // La información principal de la canción
     private final int trackNumber;       // El número de pista dentro del álbum
 
-    // Puedes añadir más metadatos si los necesitas (ej: duration, explicit, etc.)
 
     public AlbumDetalle(Cancion_Reciente track, int trackNumber) {
         this.track = track;
