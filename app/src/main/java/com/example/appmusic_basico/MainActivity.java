@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         // Autenticación Spotify
         if (spotifyAccessToken == null) {
-            authenticateSpotify();
+            authenticateSpotify(false); // No forzar diálogo en el inicio normal
         }
 
         if (savedInstanceState == null) {
@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     // Spotify Authentication
-    public void authenticateSpotify() {
+    public void authenticateSpotify(boolean forceAuthDialog) {
         String[] scopes = new String[]{
                 "user-read-private",
                 "playlist-read-private",
@@ -215,10 +215,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 "streaming",
                 "user-read-recently-played"
         };
-        AuthorizationRequest request = new AuthorizationRequest.Builder(CLIENT_ID,
-                AuthorizationResponse.Type.TOKEN, REDIRECT_URI)
-                .setScopes(scopes).build();
-        AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request);
+        AuthorizationRequest.Builder builder = new AuthorizationRequest.Builder(
+                CLIENT_ID,
+                AuthorizationResponse.Type.TOKEN,
+                REDIRECT_URI
+        ).setScopes(scopes);
+        if (forceAuthDialog){
+            builder.setShowDialog(true);
+        }
+        AuthorizationClient.openLoginActivity(this, REQUEST_CODE, builder.build());
     }
 
     @Override
@@ -289,19 +294,31 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     // Mini Player subscription
     private void subscribeToPlayerStateInMain() {
-        if (mSpotifyAppRemote == null) return;
-
-        if (mPlayerStateSubscription != null && !mPlayerStateSubscription.isCanceled()) {
-            mPlayerStateSubscription.cancel();
-            mPlayerStateSubscription = null;
+        if (mSpotifyAppRemote == null || !mSpotifyAppRemote.isConnected()) {
+            Log.e(TAG, "No se puede suscribir/cancelar: App Remote no conectado.");
+            return;
         }
 
+        if (mPlayerStateSubscription != null && !mPlayerStateSubscription.isCanceled()) {
+            try {
+                // Intenta cancelar la suscripción anterior
+                mPlayerStateSubscription.cancel();
+            } catch (Exception e) {
+                // 💡 Maneja la excepción si la conexión se terminó JUSTO AHORA
+                // Esto evitará que la aplicación crashee por el log de error
+                Log.w(TAG, "No se pudo cancelar la suscripción anterior, probablemente la conexión terminó.", e);
+            } finally {
+                mPlayerStateSubscription = null;
+            }
+        }
+
+        // Código para crear la nueva suscripción
         mPlayerStateSubscription = (Subscription<PlayerState>) mSpotifyAppRemote.getPlayerApi()
                 .subscribeToPlayerState()
                 .setEventCallback(playerState -> {
                     currentTrack = playerState.track;
                     isPlaying = !playerState.isPaused;
-                    updateMiniPlayerState(playerState);  // Actualiza el mini reproductor
+                    updateMiniPlayerState(playerState);
                 })
                 .setErrorCallback(error -> Log.e(TAG, "Error PlayerState subscription: " + error.getMessage()));
     }
@@ -377,6 +394,53 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         } else {
             // Esto solo ocurre si el fragmento aún no se ha inicializado o si la etiqueta es incorrecta
             Log.w("MainActivity", "⚠️ FragmentSearch no encontrado o no está adjunto para notificación.");
+        }
+    }
+
+    // ===========================================================
+    // 🚪 CIERRE DE SESIÓN
+    // ===========================================================
+
+    /**
+     * Limpia el token, desconecta el AppRemote y fuerza la re-autenticación.
+     */
+    public void logoutSpotify() {
+        // 1. Limpiar el token de acceso
+        spotifyAccessToken = null;
+        Log.d(TAG, "Token de acceso de Spotify limpiado.");
+
+        // 2. Desconectar Spotify App Remote si está conectado
+        if (mSpotifyAppRemote != null && mSpotifyAppRemote.isConnected()) {
+            SpotifyAppRemote.disconnect(mSpotifyAppRemote);
+            mSpotifyAppRemote = null;
+            Log.d(TAG, "Spotify App Remote desconectado.");
+        }
+
+        if (mPlayerStateSubscription != null) {
+            mPlayerStateSubscription = null;
+        }
+
+        // 3. (Opcional) Limpiar listas/datos en la app (ej: recientes, etc.)
+//        globalPlaylist.clear();
+//        if (playlistManager != null) {
+//            playlistManager.setPlaylist(new ArrayList<>());
+//        }
+
+        // 4. Notificar a los fragments que los datos deben limpiarse o recargarse
+        // Esto es un ejemplo, FragmentHome tiene que manejar la limpieza en su lado.
+//        if (fragmentHome != null) {
+//            // Un método para limpiar la vista en FragmentHome
+//            fragmentHome.clearContentOnLogout();
+//        }
+
+        // 5. Iniciar el flujo de autenticación nuevamente
+        Toast.makeText(this, "Cerrando sesión. Por favor, inicie sesión de nuevo.", Toast.LENGTH_LONG).show();
+        authenticateSpotify(true);
+
+        // 6. Volver a la Home y asegurar que se esconde el mini reproductor
+        loadHomeFragment();
+        if (miniPlayerBar != null) {
+            miniPlayerBar.setVisibility(View.GONE);
         }
     }
 
