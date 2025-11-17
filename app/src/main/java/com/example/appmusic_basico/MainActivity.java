@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
     }
 
-    // 💡 Nuevo: Método de reconexión de instancia
+    // Método de reconexión de instancia
     public void reconnectSpotifyIfNecessary() {
         if (mSpotifyAppRemote == null || !mSpotifyAppRemote.isConnected()) {
             connectSpotifyRemote(false); // Llama a tu método de instancia
@@ -165,8 +165,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             miniPlayerBar.setVisibility(View.GONE);  // Si no hay ninguna canción, esconder el mini reproductor
         }
     }
-
-
 
     // Fragment navigation
     private void showFragment(Fragment fragmentToShow) {
@@ -260,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 mSpotifyAppRemote = spotifyAppRemote;
                 Log.d(TAG, "✅ Spotify App Remote conectado.");
 
-                // 💡 CAMBIO CLAVE: Inicializar o configurar el PlaylistManager AQUÍ
+                // Inicializar o configurar el PlaylistManager
                 if (playlistManager == null) {
                     // Inicializar si es la primera vez
                     playlistManager = new PlaylistManager(globalPlaylist, mSpotifyAppRemote);
@@ -334,17 +332,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         });
     }
 
-    // Este método debe delegar la reproducción al PlaylistManager
+    // método para delegar la reproducción al PlaylistManager
     public void playSpotifyUri(String uri) {
         if (mSpotifyAppRemote == null) {
-            // La lógica de reconexión debe quedarse aquí en MainActivity
+            // La lógica de reconexión
             mPendingSpotifyUri = uri;
             connectSpotifyRemote(false);
             return;
         }
 
-        // 💡 CAMBIO CLAVE: Usar el PlaylistManager para iniciar la reproducción.
-        // Esto es vital si quieres que el Manager actualice su estado interno (index, etc.).
+        // Usar el PlaylistManager para iniciar la reproducción.
+        // Esto es para que Manager actualice su estado interno (index, etc.).
         if (playlistManager != null) {
             playlistManager.playUri(uri);
         } else {
@@ -380,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         return mSpotifyAppRemote;
     }
 
-    // 💡 Nuevo: Método para notificar al Fragmento de Búsqueda
+    // Método para notificar al Fragmento de Búsqueda
     public void notifyFragmentSearchToLoad() {
         // 1. Obtener el fragmento por su etiqueta (tag)
         Fragment searchFragment = getSupportFragmentManager().findFragmentByTag("SearchFragment");

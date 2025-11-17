@@ -4,12 +4,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,9 +21,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appmusic_basico.api.RetrofitClient;
-import com.example.appmusic_basico.api.SpotifyArtistSearchResponse;
 import com.example.appmusic_basico.api.SpotifyRecentlyPlayedResponse;
 import com.example.appmusic_basico.api.SpotifyService;
+import com.example.appmusic_basico.api.SpotifyUserProfileResponse;
+import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -43,18 +44,17 @@ import retrofit2.Response;
 public class FragmentHome extends Fragment {
 
     private static final String TAG = "FragmentHome";
-
     private RecyclerView recyclerView;
     private RecentlyPlayedAdapter adapter;
-    private List<Cancion_Reciente> cancionesRecientes = new ArrayList<>();
+    private final List<Cancion_Reciente> cancionesRecientes = new ArrayList<>();
     private TextView tvSpotifyStatus;
-
     private RecyclerView rvArtists;
     private ArtistAdapter artistAdapter;
-    private List<Artistas> favoriteArtists = new ArrayList<>();
-
+    private final List<Artistas> favoriteArtists = new ArrayList<>();
     private final Gson gson = new Gson();
     private BroadcastReceiver favoriteUpdateReceiver;
+    private TextView tvBienvenidoUsuario;
+    private ImageView ivFotoPerfilHome;
 
     // ===========================================================
     // 🧩 CICLO DE VIDA
@@ -70,6 +70,9 @@ public class FragmentHome extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        tvBienvenidoUsuario = view.findViewById(R.id.tv_bienvenido_usuario);
+        ivFotoPerfilHome = view.findViewById(R.id.iv_foto_perfil_home);
 
         // --------------------------------------------
         // 🎵 Canciones Recientes
@@ -89,6 +92,7 @@ public class FragmentHome extends Fragment {
         recyclerView.setAdapter(adapter);
 
         if (MainActivity.spotifyAccessToken != null) {
+            cargarDatosPerfil();
             cargarCancionesRecientes();
         } else {
             Log.w(TAG, "Token Spotify no disponible.");
@@ -137,6 +141,57 @@ public class FragmentHome extends Fragment {
             requireContext().unregisterReceiver(favoriteUpdateReceiver);
             favoriteUpdateReceiver = null;
         }
+    }
+
+    // =======================================
+    // 👤 CARGA DE DATOS DEL PERFIL DE USUARIO
+    // =======================================
+    public void cargarDatosPerfil() {
+        if (MainActivity.spotifyAccessToken == null) return;
+
+        SpotifyService api = RetrofitClient.getClient().create(SpotifyService.class);
+
+        api.getCurrentUserProfile("Bearer " + MainActivity.spotifyAccessToken)
+                .enqueue(new Callback<SpotifyUserProfileResponse>() {
+                    @Override
+                    public void onResponse(Call<SpotifyUserProfileResponse> call,
+                                           Response<SpotifyUserProfileResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            SpotifyUserProfileResponse profile = response.body();
+
+                            // 1. Actualizar Nombre de Usuario
+                            String nombre = profile.getDisplayName();
+                            if (nombre != null && !nombre.isEmpty()) {
+                                tvBienvenidoUsuario.setText("Hola, " + nombre);
+                            } else {
+                                tvBienvenidoUsuario.setText("Bienvenido");
+                            }
+                            Log.d(TAG, "✅ Perfil cargado: " + nombre);
+
+                            // 2. Actualizar Foto de Perfil
+                            if (profile.getImages() != null && !profile.getImages().isEmpty()) {
+                                // Spotify devuelve a menudo varias imágenes, tomamos la primera
+                                String imageUrl = profile.getImages().get(0).getUrl();
+
+                                if (getContext() != null) {
+                                    Glide.with(getContext())
+                                            .load(imageUrl)
+                                            .placeholder(R.drawable.image_2930) // Imagen por defecto
+                                            .error(R.drawable.image_2930)      // En caso de error
+                                            .into(ivFotoPerfilHome);
+                                }
+                            }
+
+                        } else {
+                            Log.e(TAG, "❌ Error al cargar perfil API: " + response.code());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<SpotifyUserProfileResponse> call, Throwable t) {
+                        Log.e(TAG, "❌ Fallo al cargar perfil: " + t.getMessage(), t);
+                    }
+                });
     }
 
     // ===========================================================

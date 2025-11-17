@@ -81,4 +81,9 @@ public interface SpotifyService {
             @Header("Authorization") String authHeader,
             @Query("ids") String artistIds // Ej: "artistId1,artistId2,artistId3"
     );
+
+    @GET("v1/me")
+    Call<SpotifyUserProfileResponse> getCurrentUserProfile(
+            @Header("Authorization") String authorization
+    );
 }
