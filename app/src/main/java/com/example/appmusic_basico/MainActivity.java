@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static List<String> playlistUris = new ArrayList<>();
     public static List<Cancion_Reciente> globalPlaylist = new ArrayList<>();
     public static PlaylistManager playlistManager;
-    // 💡 Nuevo: Bandera estática para solicitar reconexión
+    //Bandera estática para solicitar reconexión
     public static boolean shouldReconnectSpotify = false;
 
     private FragmentHome fragmentHome;
@@ -65,6 +65,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private Fragment activeFragment;
     private Track currentTrack;
     private boolean isPlaying;
+    private static final String STATE_TRACK_TITLE = "trackTitle";
+    private static final String STATE_TRACK_ARTIST = "trackArtist";
+    private static final String STATE_IS_PLAYING = "isPlaying";
+    private static final String STATE_IS_MINIPLAYER_VISIBLE = "isMiniPlayerVisible";
+    private static final String STATE_TRACK_URI = "trackUri";
 
 
     @Override
@@ -115,6 +120,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 intent.putExtra("IS_PLAYING", isPlaying);
                 startActivity(intent);
             });
+            if (savedInstanceState != null) {
+                restoreMiniPlayerState(savedInstanceState);
+            }
         }
 
 
@@ -140,6 +148,20 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             shouldReconnectSpotify = false; // Restablecer la bandera
             reconnectSpotifyIfNecessary();
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // 💡 IMPORTANTE: Desconectar el App Remote y limpiar la referencia al detener la actividad.
+        // Esto fuerza una reconexión limpia en onStart al rotar.
+        if (mSpotifyAppRemote != null && mSpotifyAppRemote.isConnected()) {
+            SpotifyAppRemote.disconnect(mSpotifyAppRemote);
+            mSpotifyAppRemote = null;
+            Log.d(TAG, "Spotify App Remote desconectado en onStop.");
+        }
+        // NOTA: No es necesario cancelar la suscripción aquí, ya que la desconexión
+        // del remote la cancela implícitamente, y el remote es null.
     }
 
     // Método de reconexión de instancia
@@ -321,8 +343,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 .setErrorCallback(error -> Log.e(TAG, "Error PlayerState subscription: " + error.getMessage()));
     }
 
-
-
     // Playback
     private void togglePlayPause() {
         if (mSpotifyAppRemote == null) return;
@@ -442,4 +462,62 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
     }
 
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        // 1. Guardar el estado de la barra del mini reproductor
+        if (miniPlayerBar != null) {
+            boolean isVisible = miniPlayerBar.getVisibility() == View.VISIBLE;
+            outState.putBoolean(STATE_IS_MINIPLAYER_VISIBLE, isVisible);
+        }
+
+        // 2. Si hay una pista actual, guardar sus detalles
+        if (currentTrack != null) {
+            outState.putString(STATE_TRACK_TITLE, currentTrack.name);
+            outState.putString(STATE_TRACK_ARTIST, currentTrack.artist.name);
+            outState.putString(STATE_TRACK_URI, currentTrack.uri);
+            outState.putBoolean(STATE_IS_PLAYING, isPlaying);
+        } else {
+            // Asegurar que guardamos que no hay pista reproduciéndose si el mini player está visible por error
+            outState.putBoolean(STATE_IS_MINIPLAYER_VISIBLE, false);
+        }
+    }
+
+    // MainActivity.java
+
+    /**
+     * Restaura el estado del mini reproductor a partir del Bundle guardado.
+     */
+    private void restoreMiniPlayerState(Bundle savedInstanceState) {
+
+        boolean isVisible = savedInstanceState.getBoolean(STATE_IS_MINIPLAYER_VISIBLE, false);
+
+        if (isVisible) {
+            String title = savedInstanceState.getString(STATE_TRACK_TITLE);
+            String artist = savedInstanceState.getString(STATE_TRACK_ARTIST);
+            boolean isPaused = !savedInstanceState.getBoolean(STATE_IS_PLAYING, false);
+            String trackUri = savedInstanceState.getString(STATE_TRACK_URI);
+
+            if (title != null && artist != null) {
+                // Reconstruir la UI del mini reproductor
+                miniPlayerTrackTitle.setText(title + " - " + artist);
+
+                int playPauseIcon = isPaused ? R.drawable.play_arrow_24dp : R.drawable.pause_24dp;
+                miniPlayerPlayPauseButton.setImageResource(playPauseIcon);
+                miniPlayerBar.setVisibility(View.VISIBLE);
+
+                // Nota: Aunque el mini reproductor se ve correcto, la suscripción de Spotify
+                // se reanudará en onConnected, lo que sobrescribirá este estado con el estado real
+                // de la reproducción en el App Remote. Esto solo asegura que el usuario no vea
+                // un reproductor vacío mientras se reconecta.
+
+                Log.d(TAG, "Mini Player restaurado por rotación.");
+            } else {
+                miniPlayerBar.setVisibility(View.GONE);
+            }
+        } else {
+            miniPlayerBar.setVisibility(View.GONE);
+        }
+    }
 }
