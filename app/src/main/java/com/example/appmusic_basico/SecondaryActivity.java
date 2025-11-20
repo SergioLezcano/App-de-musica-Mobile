@@ -178,6 +178,13 @@ public class SecondaryActivity extends AppCompatActivity implements SongListAdap
     // ===========================================================================================
     private void loadArtistTopTracks() {
 
+        if (artistId == null || artistId.trim().isEmpty()) {
+            Log.e("SecondaryActivity", "Error: No se puede cargar Top Tracks. Artist ID es null o vacío.");
+            Toast.makeText(this, "No se pudo cargar las canciones. Faltan datos del artista.", Toast.LENGTH_LONG).show();
+            // Opcional: Podrías hacer que la lista de canciones se oculte o muestre un mensaje de error en la UI.
+            return;
+        }
+
         if (MainActivity.spotifyAccessToken == null) {
             Toast.makeText(this, "Token no disponible.", Toast.LENGTH_LONG).show();
             return;
@@ -188,7 +195,7 @@ public class SecondaryActivity extends AppCompatActivity implements SongListAdap
         api.getArtistTopTracks(
                 "Bearer " + MainActivity.spotifyAccessToken,
                 artistId,
-                "AR" // país
+                "US" // país
         ).enqueue(new Callback<SpotifyArtistTopTracksResponse>() {
             @Override
             public void onResponse(Call<SpotifyArtistTopTracksResponse> call,
@@ -227,21 +234,21 @@ public class SecondaryActivity extends AppCompatActivity implements SongListAdap
         });
     }
 
-    // ===========================================================================================
-    // ✅ AL HACER CLICK EN UNA CANCION
-    // ===========================================================================================
-    private void onSongClicked(Cancion_Reciente cancion, View itemView) {
-
-        // Si es un click normal, reproducir
-        if (!itemView.isLongClickable()) {
-            playSong(cancion);
-            return;
-        }
-
-        // Si es un long click (asumiendo que el adaptador lo maneja)
-        // Mostramos el menú contextual
-        showSongPopupMenu(itemView, cancion);
-    }
+//    // ===========================================================================================
+//    // ✅ AL HACER CLICK EN UNA CANCION
+//    // ===========================================================================================
+//    private void onSongClicked(Cancion_Reciente cancion, View itemView) {
+//
+//        // Si es un click normal, reproducir
+//        if (!itemView.isLongClickable()) {
+//            playSong(cancion);
+//            return;
+//        }
+//
+//        // Si es un long click
+//        // Mostramos el menú contextual
+//        showSongPopupMenu(itemView, cancion);
+//    }
 
     // ------------------------------------------------------------------------------------------
 // 📝 NUEVO MÉTODO: Mostrar menú desplegable para agregar a favoritos

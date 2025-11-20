@@ -417,8 +417,6 @@ public class FragmentSearch extends Fragment implements
 //                    .replace(R.id.fragment_container, categorySongFragment)
 //                    .addToBackStack(null)
 //                    .commit();
-//
-//            Toast.makeText(getContext(), "Abriendo categoría: " + category.getName(), Toast.LENGTH_SHORT).show();
 //        }
     }
 
@@ -455,21 +453,28 @@ public class FragmentSearch extends Fragment implements
                             List<AlbumItem> newReleasesFromApi = response.body().getAlbums().getItems();
 
                             for (AlbumItem apiItem : newReleasesFromApi) {
-                                // 💡 Lógica de mapeo: Convertir el modelo de la API al modelo de la UI
-                                String artistName = (apiItem.getArtists() != null && !apiItem.getArtists().isEmpty())
-                                        ? apiItem.getArtists().get(0).getName()
-                                        : "Artista Desconocido";
+
+                                String artistName = "Artista Desconocido";
+                                String artistId = null; // 🛑 INICIALIZAR EL ID DEL ARTISTA
+
+                                if (apiItem.getArtists() != null && !apiItem.getArtists().isEmpty()) {
+                                    // El primer artista es el principal
+                                    artistName = apiItem.getArtists().get(0).getName();
+                                    artistId = apiItem.getArtists().get(0).getId(); // 🛑 OBTENER EL ID DEL ARTISTA
+                                }
 
                                 String imageUrl = (apiItem.getImages() != null && !apiItem.getImages().isEmpty())
                                         ? apiItem.getImages().get(0).getUrl()
                                         : null;
 
+                                // 🛑 USAR EL CONSTRUCTOR ACTUALIZADO (ahora con 6 parámetros)
                                 albumList.add(new AlbumExplorerItem(
-                                        apiItem.getId(),           // ID del Álbum
-                                        apiItem.getName(),         // Nombre del Álbum
-                                        artistName,                // Nombre del Artista
-                                        imageUrl,                  // Carátula
-                                        generateRandomColor()      // Color de la tarjeta
+                                        apiItem.getId(),           // 1. ID del Álbum
+                                        apiItem.getName(),         // 2. Nombre del Álbum
+                                        artistName,                // 3. Nombre del Artista
+                                        artistId,                  // 4. 🛑 ID del Artista
+                                        imageUrl,                  // 5. Carátula
+                                        generateRandomColor()      // 6. Color de la tarjeta
                                 ));
                             }
 
@@ -505,20 +510,9 @@ public class FragmentSearch extends Fragment implements
         java.util.Random random = new java.util.Random();
 
         // 2. Genera un número entero aleatorio.
-        // Usamos el bitwise AND (&) con 0xCCCCCC para enmascarar el color.
-        // 💡 NOTA: En lugar de usar 0xFFFFFF (que puede generar colores muy blancos/pálidos),
-        // usar un valor más bajo como 0xCCCCCC (un gris claro) como máximo
-        // ayuda a asegurar que los colores resultantes sean más oscuros y tengan
-        // mejor contraste con el texto claro (si lo usas) o sean visualmente más ricos.
         int color = 0xFF000000 | (0xFFFFFF & random.nextInt());
 
-        // Si quieres un enfoque más simple que asegura mejor contraste con texto BLANCO,
-        // podrías limitar el valor para obtener colores más oscuros:
-        // int color = 0xFF000000 + random.nextInt(0xAA0000);
-
         // 3. Convierte el entero a su representación hexadecimal.
-        // %06X asegura que el número se formatee con 6 dígitos hexadecimales, rellenando con ceros.
-        // Usamos color & 0xFFFFFF para ignorar el canal alfa si es necesario
         String hexColor = String.format("#%06X", (color & 0xFFFFFF));
 
         return hexColor;
@@ -531,7 +525,7 @@ public class FragmentSearch extends Fragment implements
     @Override
     public void onAlbumClick(AlbumExplorerItem album) {
         if (getContext() != null) {
-            // Asumiendo que AlbumDetalleActivity es la clase correcta para el detalle
+            //AlbumDetalleActivity es la clase correcta para el detalle
             Intent intent = new Intent(getContext(), AlbumDetalleActivity.class);
 
             // Pasamos los datos esenciales del álbum a la nueva Activity
@@ -539,6 +533,7 @@ public class FragmentSearch extends Fragment implements
             intent.putExtra("ALBUM_URI", (String) null);
             intent.putExtra("ALBUM_NAME", album.getAlbumName());
             intent.putExtra("ARTIST_NAME", album.getArtistName());
+            intent.putExtra("ARTIST_ID", album.getArtistId());
             intent.putExtra("ALBUM_IMAGE_URL", album.getImageUrl());
 
             startActivity(intent);

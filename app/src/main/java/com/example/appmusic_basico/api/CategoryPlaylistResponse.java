@@ -1,4 +1,4 @@
-package com.example.appmusic_basico.api; // o .api.responses
+package com.example.appmusic_basico.api;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.List;

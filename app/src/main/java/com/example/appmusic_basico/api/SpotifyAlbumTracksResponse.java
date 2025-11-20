@@ -3,8 +3,6 @@ package com.example.appmusic_basico.api;
 import java.util.List;
 
 public class SpotifyAlbumTracksResponse {
-
-    // El campo 'items' está en la raíz y contiene la lista de pistas (tracks)
     private List<Item> items;
 
     // Campos de paginación
@@ -22,8 +20,6 @@ public class SpotifyAlbumTracksResponse {
         return total;
     }
 
-    // --- Clase interna para cada resultado de pista (track) individual ---
-    // Esta clase representa la información esencial de una canción dentro de un álbum.
     public static class Item {
         private String id;
         private String name;

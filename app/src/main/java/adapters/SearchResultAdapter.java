@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.appmusic_basico.R; // Asegúrate de que R.layout.item_search_result exista
+import com.example.appmusic_basico.R;
 
 import java.util.List;
 
@@ -49,7 +49,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         // El subtítulo puede ser el nombre del artista, o el tipo de ítem
         String subtitleText = item.getSubtitle();
 
-        // 💡 Opcional: Añadir el tipo al subtítulo si el ítem es un artista o álbum
+        // Añadir el tipo al subtítulo si el ítem es un artista o álbum
         if ("artist".equals(item.getType())) {
             subtitleText = "Artista";
         } else if ("album".equals(item.getType())) {
@@ -92,7 +92,6 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         public ResultViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            // Asegúrate de que estos IDs existan en item_search_result.xml
             ivImage = itemView.findViewById(R.id.iv_search_image);
             tvTitle = itemView.findViewById(R.id.tv_search_title);
             tvSubtitle = itemView.findViewById(R.id.tv_search_subtitle);

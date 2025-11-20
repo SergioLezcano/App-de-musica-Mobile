@@ -32,22 +32,4 @@ public class PlaylistItem {
         return coverUrl;
     }
 
-    // --- Setters (Opcionales, pero buena práctica si los datos pueden cambiar) ---
-    /*
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setArtist(String artist) {
-        this.artist = artist;
-    }
-
-    public void setCoverUrl(String coverUrl) {
-        this.coverUrl = coverUrl;
-    }
-    */
 }

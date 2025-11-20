@@ -3,8 +3,6 @@ package com.example.appmusic_basico.api;
 import java.util.List;
 
 public class SpotifyAlbumSearchResponse {
-
-    // El objeto raíz de la respuesta de búsqueda de álbumes contiene el campo "albums"
     private Albums albums;
 
     public Albums getAlbums() {

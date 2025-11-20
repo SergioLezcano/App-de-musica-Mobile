@@ -3,11 +3,9 @@ package adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.bumptech.glide.Glide;
 import com.example.appmusic_basico.R;
 import java.util.List;
 import models.AlbumExplorerItem;
@@ -46,19 +44,11 @@ public class AlbumExplorerAdapter extends RecyclerView.Adapter<AlbumExplorerAdap
         // 🆕 Aplicar Color de Fondo al CardView
         try {
             int color = Color.parseColor(album.getBackgroundColorHex());
-            // ¡CAMBIO AQUÍ! Aplicar el color a la tarjeta principal
             holder.cardCategoryItem.setCardBackgroundColor(color);
         } catch (IllegalArgumentException e) {
             // Si el código HEX no es válido, usa un color predeterminado
             holder.cardCategoryItem.setCardBackgroundColor(Color.parseColor("#343434"));
         }
-
-//        Glide.with(holder.itemView.getContext())
-//                .load(album.getImageUrl())
-//                .placeholder(R.drawable.album_art_placeholder)
-//                .centerCrop()
-//                .error(R.drawable.album_art_placeholder)
-//                .into(holder.ivAlbumImage);
 
         holder.itemView.setOnClickListener(v -> listener.onAlbumClick(album));
     }
@@ -78,8 +68,6 @@ public class AlbumExplorerAdapter extends RecyclerView.Adapter<AlbumExplorerAdap
 
             cardCategoryItem = itemView.findViewById(R.id.card_category_item);
             tvAlbumInfo = itemView.findViewById(R.id.tv_title_target);
-
-            // 💡 Opcional: Ajustar el tamaño del texto para que quepan dos líneas
             tvAlbumInfo.setTextSize(12f);
             tvAlbumInfo.setMaxLines(2);
         }

@@ -153,15 +153,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     protected void onStop() {
         super.onStop();
-        // 💡 IMPORTANTE: Desconectar el App Remote y limpiar la referencia al detener la actividad.
-        // Esto fuerza una reconexión limpia en onStart al rotar.
-        if (mSpotifyAppRemote != null && mSpotifyAppRemote.isConnected()) {
-            SpotifyAppRemote.disconnect(mSpotifyAppRemote);
-            mSpotifyAppRemote = null;
-            Log.d(TAG, "Spotify App Remote desconectado en onStop.");
-        }
-        // NOTA: No es necesario cancelar la suscripción aquí, ya que la desconexión
-        // del remote la cancela implícitamente, y el remote es null.
     }
 
     // Método de reconexión de instancia
@@ -361,8 +352,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             return;
         }
 
-        // Usar el PlaylistManager para iniciar la reproducción.
-        // Esto es para que Manager actualice su estado interno (index, etc.).
+        // el PlaylistManager inicia la reproducción.
         if (playlistManager != null) {
             playlistManager.playUri(uri);
         } else {
@@ -438,19 +428,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             mPlayerStateSubscription = null;
         }
 
-        // 3. (Opcional) Limpiar listas/datos en la app (ej: recientes, etc.)
-//        globalPlaylist.clear();
-//        if (playlistManager != null) {
-//            playlistManager.setPlaylist(new ArrayList<>());
-//        }
-
-        // 4. Notificar a los fragments que los datos deben limpiarse o recargarse
-        // Esto es un ejemplo, FragmentHome tiene que manejar la limpieza en su lado.
-//        if (fragmentHome != null) {
-//            // Un método para limpiar la vista en FragmentHome
-//            fragmentHome.clearContentOnLogout();
-//        }
-
         // 5. Iniciar el flujo de autenticación nuevamente
         Toast.makeText(this, "Cerrando sesión. Por favor, inicie sesión de nuevo.", Toast.LENGTH_LONG).show();
         authenticateSpotify(true);
@@ -484,8 +461,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
     }
 
-    // MainActivity.java
-
     /**
      * Restaura el estado del mini reproductor a partir del Bundle guardado.
      */
@@ -506,11 +481,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 int playPauseIcon = isPaused ? R.drawable.play_arrow_24dp : R.drawable.pause_24dp;
                 miniPlayerPlayPauseButton.setImageResource(playPauseIcon);
                 miniPlayerBar.setVisibility(View.VISIBLE);
-
-                // Nota: Aunque el mini reproductor se ve correcto, la suscripción de Spotify
-                // se reanudará en onConnected, lo que sobrescribirá este estado con el estado real
-                // de la reproducción en el App Remote. Esto solo asegura que el usuario no vea
-                // un reproductor vacío mientras se reconecta.
 
                 Log.d(TAG, "Mini Player restaurado por rotación.");
             } else {

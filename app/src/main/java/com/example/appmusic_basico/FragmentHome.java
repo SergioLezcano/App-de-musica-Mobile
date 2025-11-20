@@ -320,33 +320,4 @@ public class FragmentHome extends Fragment {
         );
     }
 
-    // ===========================================================
-    // 🧼 MANEJO DE CIERRE DE SESIÓN
-    // ===========================================================
-
-    public void clearContentOnLogout() {
-        // Limpiar la lista de canciones recientes del adaptador
-        cancionesRecientes.clear();
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
-        }
-
-        // Limpiar la lista de artistas favoritos
-        favoriteArtists.clear();
-        if (artistAdapter != null) {
-            artistAdapter.notifyDataSetChanged();
-        }
-        if (rvArtists != null) {
-            rvArtists.setVisibility(View.GONE);
-        }
-
-        // Mostrar el estado de desconexión
-        if (tvSpotifyStatus != null) {
-            tvSpotifyStatus.setText("Sesión cerrada. Autenticando...");
-        }
-
-        Log.d(TAG, "Contenido de FragmentHome limpiado tras cerrar sesión.");
-    }
-
-
 }

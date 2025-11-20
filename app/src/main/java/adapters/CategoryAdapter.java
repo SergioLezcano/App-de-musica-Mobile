@@ -43,12 +43,11 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
 
         holder.tvCategoryName.setText(category.getName());
 
-        // 🆕 Aplicar Color de Fondo al CardView
+        // Aplicar Color de Fondo al CardView
         try {
             int color = Color.parseColor(category.getBackgroundColorHex());
             holder.cardCategoryItem.setCardBackgroundColor(color);
         } catch (IllegalArgumentException e) {
-            // Si el código HEX no es válido, usa un color predeterminado
             holder.cardCategoryItem.setCardBackgroundColor(Color.parseColor("#343434"));
         }
 

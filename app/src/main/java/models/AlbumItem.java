@@ -1,10 +1,6 @@
-package models; // o api
-
+package models;
 import com.google.gson.annotations.SerializedName;
-import models.Image;
-
 import java.util.List;
-
 public class AlbumItem {
 
     @SerializedName("id")

@@ -1,4 +1,4 @@
-package com.example.appmusic_basico.api; // o donde guardes tus respuestas
+package com.example.appmusic_basico.api;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.List;

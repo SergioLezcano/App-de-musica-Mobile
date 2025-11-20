@@ -4,13 +4,9 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.example.appmusic_basico.R;
 import java.util.List;
 import models.ArtistExplorerItem;
@@ -44,23 +40,14 @@ public class ArtistExplorerAdapter extends RecyclerView.Adapter<ArtistExplorerAd
 
         holder.tvArtistName.setText(artist.getArtistName());
 
-        // 🆕 Aplicar Color de Fondo al CardView
+        // Aplicar Color de Fondo al CardView
         try {
             int color = Color.parseColor(artist.getBackgroundColorHex());
-            // ¡CAMBIO AQUÍ! Aplicar el color a la tarjeta principal
             holder.cardCategoryItem.setCardBackgroundColor(color);
         } catch (IllegalArgumentException e) {
             // Si el código HEX no es válido, usa un color predeterminado
             holder.cardCategoryItem.setCardBackgroundColor(Color.parseColor("#343434"));
         }
-
-//        Glide.with(holder.itemView.getContext())
-//                .load(artist.getImageUrl())
-//                .placeholder(R.drawable.album_art_placeholder)
-//                // 🛑 CRÍTICO: Transformación a circular para artistas
-//                .transform(new CircleCrop())
-//                .error(R.drawable.album_art_placeholder)
-//                .into(holder.ivArtistImage);
 
         holder.itemView.setOnClickListener(v -> listener.onArtistClick(artist));
     }

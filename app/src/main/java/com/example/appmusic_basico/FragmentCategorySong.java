@@ -135,11 +135,6 @@ public class FragmentCategorySong extends Fragment implements PlaylistGridAdapte
             // ❌ ¡No hay playlists para esta categoría en el mercado actual!
             Toast.makeText(getContext(), "Esta categoría no tiene playlists disponibles en el mercado seleccionado.", Toast.LENGTH_LONG).show();
 
-            // Opcional: Navegar hacia atrás o mostrar un mensaje de vacío
-            // if (getActivity() != null) {
-            //     getActivity().getSupportFragmentManager().popBackStack();
-            // }
-
             playlistAdapter.notifyDataSetChanged();
             return;
         }
@@ -179,11 +174,6 @@ public class FragmentCategorySong extends Fragment implements PlaylistGridAdapte
         MainActivity activity = (MainActivity) getActivity();
 
         if (activity != null) {
-
-            // 💡 Para reproducir una playlist, necesitamos la URI de Spotify.
-            // La URI se almacena en el modelo de respuesta Item.
-            // Si SongItem tiene un campo para la URI (ideal), úsalo.
-            // Si solo tienes el ID, debes construir la URI: spotify:playlist:<ID>
 
             String playlistUri = "spotify:playlist:" + song.getId();
 

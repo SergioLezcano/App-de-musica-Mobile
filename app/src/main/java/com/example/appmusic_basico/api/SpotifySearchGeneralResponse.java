@@ -1,10 +1,9 @@
 package com.example.appmusic_basico.api;
 
-// Reutilizamos el modelo de Artistas ya existente
 import com.example.appmusic_basico.api.SpotifyArtistSearchResponse.Artists;
-// Importamos un modelo de Álbumes (debes crearlo si no existe)
+
 import com.example.appmusic_basico.api.SpotifyAlbumSearchResponse.Albums;
-// Importamos un modelo de Pistas (debes crearlo si no existe)
+
 import com.example.appmusic_basico.api.SpotifyTrackSearchResponse.Tracks;
 
 public class SpotifySearchGeneralResponse {

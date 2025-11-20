@@ -209,8 +209,7 @@ public class ThirdActivity extends AppCompatActivity {
     private void subscribeToPlayerState() {
         unsubscribePlayerState();
 
-        // 💡 Paso 1: Asegurar que spotifyAppRemote tenga la referencia.
-        // Aunque lo obtienes en onCreate, una comprobación aquí no está de más.
+        // Paso 1: Asegurar que spotifyAppRemote tenga la referencia.
         if (spotifyAppRemote == null) {
             spotifyAppRemote = MainActivity.getSpotifyAppRemote();
         }
@@ -242,8 +241,6 @@ public class ThirdActivity extends AppCompatActivity {
         if (mPlayerStateSubscription != null && !mPlayerStateSubscription.isCanceled()) {
 
             // 2. Intentar cancelar SOLO si el remote NO es NULL.
-            // NO podemos comprobar isConnected() directamente aquí porque el remote puede ser
-            // nulo o desconectado, por lo que usamos un bloque try-catch como protección final.
             try {
                 mPlayerStateSubscription.cancel();
                 Log.d(TAG, "✅ PlayerState suscripción cancelada.");
@@ -476,9 +473,9 @@ public class ThirdActivity extends AppCompatActivity {
         return true;
     }
 
-    private String getArtistImageUrlFromSubscription() {
-        return this.currentAlbumImageUrl != null ? this.currentAlbumImageUrl : "";
-    }
+//    private String getArtistImageUrlFromSubscription() {
+//        return this.currentAlbumImageUrl != null ? this.currentAlbumImageUrl : "";
+//    }
 
     // Método de Guardado para artistas favoritos
     private void toggleFavoriteArtist(Artistas artista) {
@@ -589,7 +586,7 @@ public class ThirdActivity extends AppCompatActivity {
                             }
                         });
             } else {
-                // Si no hay token o la imagen ya está presente (caso raro aquí)
+                // Si no hay token o la imagen ya está presente
                 // Guardar el artista sin buscar la imagen si no es necesario
                 prefs.edit().putString("favorite_artists_json", gson.toJson(favoritos)).commit();
                 sendBroadcast(new Intent("ARTIST_FAVORITE_UPDATE"));
@@ -687,9 +684,9 @@ public class ThirdActivity extends AppCompatActivity {
     /**
      * Método auxiliar para notificar a FragmentHome que debe recargar la lista de favoritos.
      */
-    private void notifyFragmentHomeOfUpdate() {
-        Intent intent = new Intent("ARTIST_FAVORITE_UPDATE");
-        sendBroadcast(intent);
-    }
+//    private void notifyFragmentHomeOfUpdate() {
+//        Intent intent = new Intent("ARTIST_FAVORITE_UPDATE");
+//        sendBroadcast(intent);
+//    }
 
 }

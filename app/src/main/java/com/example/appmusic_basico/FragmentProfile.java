@@ -1,11 +1,6 @@
 package com.example.appmusic_basico;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
-
-import static java.security.AccessController.getContext;
-
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,11 +19,6 @@ import com.bumptech.glide.Glide;
 import com.example.appmusic_basico.api.RetrofitClient;
 import com.example.appmusic_basico.api.SpotifyService;
 import com.example.appmusic_basico.api.SpotifyUserProfileResponse;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.util.List;
 
 import models.Artistas;
 import retrofit2.Call;
@@ -111,11 +101,6 @@ public class FragmentProfile extends Fragment{
                                 tvUserName.setText(name);
                             }
 
-                            // 2. Actualizar Email (Si existe)
-                            // Nota: El endpoint /v1/me devuelve 'email', pero tu modelo simplificado
-                            // 'SpotifyUserProfileResponse' no lo incluye. Si lo agregas, puedes usarlo aquí.
-                            // if (tvUserEmail != null) tvUserEmail.setText(profile.getEmail());
-
                             // 3. Actualizar Foto de Perfil
                             if (profile.getImages() != null && !profile.getImages().isEmpty()) {
                                 // Tomamos la primera imagen
@@ -143,36 +128,6 @@ public class FragmentProfile extends Fragment{
                 });
     }
 
-
-    /**
-     * Limpia las vistas de la UI a sus valores por defecto.
-     */
-    private void resetProfileUI() {
-        if (tvUserName != null) {
-            tvUserName.setText("Nombre del Usuario"); // O "Invitado"
-        }
-        if (ivProfilePicture != null) {
-            ivProfilePicture.setImageResource(R.drawable.image_2930);
-        }
-        if (tvUserEmail != null) tvUserEmail.setText("correo@example.com");
-    }
-
-    /**
-     * Limpia los datos locales del usuario que no se manejan con el token (Ej: Artistas Favoritos).
-     */
-    private void clearUserDataLocally() {
-        if (getContext() == null) return;
-
-        SharedPreferences prefs =
-                getContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-
-        SharedPreferences.Editor editor = prefs.edit();
-
-        // Limpiamos la lista de artistas favoritos
-        editor.remove("favorite_artists_json");
-
-        editor.apply();
-    }
 }
 
 

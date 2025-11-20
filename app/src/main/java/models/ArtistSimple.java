@@ -1,4 +1,4 @@
-package models; // o api
+package models;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -8,8 +8,7 @@ public class ArtistSimple {
     private String id;
 
     @SerializedName("name")
-    private String name; // Nombre del artista
-
+    private String name;
     // --- Getters ---
     public String getId() {
         return id;

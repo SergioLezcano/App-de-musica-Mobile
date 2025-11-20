@@ -60,6 +60,7 @@ public class AlbumDetalleActivity extends AppCompatActivity implements AlbumDeta
     private ImageButton btnVolver, btn_bigPlay;
     private Cancion_Reciente selectedTrack;
     private final Gson gson = new Gson();
+    private String artistSpotifyId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -188,6 +189,7 @@ public class AlbumDetalleActivity extends AppCompatActivity implements AlbumDeta
         albumId = intent.getStringExtra("ALBUM_ID");
         albumName = intent.getStringExtra("ALBUM_NAME");
         artistName = intent.getStringExtra("ARTIST_NAME");
+        artistSpotifyId = intent.getStringExtra("ARTIST_ID");
         albumImageUrl = intent.getStringExtra("ALBUM_IMAGE_URL");
         albumUri = intent.getStringExtra("ALBUM_URI");
 
@@ -293,7 +295,6 @@ public class AlbumDetalleActivity extends AppCompatActivity implements AlbumDeta
         }
 
         PopupMenu popup = new PopupMenu(this, view);
-        // 🛑 Asegúrate de que este R.menu exista y contenga los IDs usados abajo.
         popup.getMenuInflater().inflate(R.menu.menu_opciones_album_detalle, popup.getMenu());
         popup.setOnMenuItemClickListener(this::handleMenuItemSelection);
         popup.show();
@@ -314,16 +315,12 @@ public class AlbumDetalleActivity extends AppCompatActivity implements AlbumDeta
             return true;
         }
         else if (id == R.id.opcion_agregar_artist_favoritos) {
-            // 🚨 Asumiendo que quieres guardar el artista de la canción seleccionada
-            if (selectedTrack == null) return false;
+            if (selectedTrack == null || artistSpotifyId == null) return false;
 
             String artistName = selectedTrack.getArtistaName();
-            String artistImageUrl = selectedTrack.getCoverUrl(); // Usar la carátula de la canción como imagen inicial
-            // Nota: Si SpotifyAlbumTracksResponse.Item tiene el ID del artista, úsalo aquí.
-            // Por ahora, usamos null si no está disponible, y la API lo buscará.
-            String artistId = null;
+            String artistImageUrl = selectedTrack.getCoverUrl();
 
-            Artistas newFavorite = new Artistas(artistName, artistImageUrl, artistId);
+            Artistas newFavorite = new Artistas(artistName, artistImageUrl, artistSpotifyId);
             toggleFavoriteArtist(newFavorite);
             return true;
         }
@@ -377,6 +374,10 @@ public class AlbumDetalleActivity extends AppCompatActivity implements AlbumDeta
             sendBroadcast(new Intent("ARTIST_FAVORITE_UPDATE")); // Notificar
         } else {
             // Si no existe, agregar y buscar imagen
+            if (MainActivity.spotifyAccessToken == null) {
+                Toast.makeText(this, "Spotify no conectado.", Toast.LENGTH_SHORT).show();
+                return;
+            }
             favoritos.add(artista); // Agregar el nuevo artista con info básica
             Toast.makeText(this, artista.getNombre() + " agregado a favoritos", Toast.LENGTH_SHORT).show();
 
