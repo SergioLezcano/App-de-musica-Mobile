@@ -1,6 +1,11 @@
 package com.example.appmusic_basico;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,12 +18,14 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.example.appmusic_basico.api.RetrofitClient;
 import com.example.appmusic_basico.api.SpotifyService;
 import com.example.appmusic_basico.api.SpotifyUserProfileResponse;
+import com.google.gson.Gson;
 
 import models.Artistas;
 import retrofit2.Call;
@@ -31,6 +38,7 @@ public class FragmentProfile extends Fragment{
     private TextView tvUserName;
     private ImageView ivProfilePicture;
     private TextView tvUserEmail;
+    private BroadcastReceiver tokenReceiver;
 
     // Constructor requerido
     public FragmentProfile() {
@@ -53,12 +61,25 @@ public class FragmentProfile extends Fragment{
         ivProfilePicture = view.findViewById(R.id.iv_profile_picture);
         tvUserEmail = view.findViewById(R.id.tv_user_email);
 
-        // 2. Cargar datos del perfil si el token existe
+        tokenReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String token = intent.getStringExtra("token");
+                if (token != null) {
+                    Log.d("PROFILE", "Token recibido en FragmentProfile → " + token);
+                    MainActivity.spotifyAccessToken = token;  // opcional
+                    loadUserProfileData(); //ejecuta con token
+                }
+            }
+        };
+
+        ContextCompat.registerReceiver(requireActivity(), tokenReceiver,
+                new IntentFilter("SPOTIFY_TOKEN_READY"), ContextCompat.RECEIVER_EXPORTED);
+
         if (MainActivity.spotifyAccessToken != null) {
             loadUserProfileData();
         } else {
-            // Mostrar estado desconectado
-            tvUserName.setText("Invitado");
+            Log.w(TAG, "Token Spotify no disponible.");
         }
 
         // 3. Implementar el Listener para Cerrar Sesión
@@ -79,11 +100,20 @@ public class FragmentProfile extends Fragment{
         });
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        requireActivity().unregisterReceiver(tokenReceiver);
+    }
+
+
     // ===========================================================
     // 👤 CARGA DE DATOS DEL PERFIL DE USUARIO
     // ===========================================================
     public void loadUserProfileData() {
-        if (MainActivity.spotifyAccessToken == null) return;
+        if (MainActivity.spotifyAccessToken == null){
+            return;
+        }
 
         SpotifyService api = RetrofitClient.getClient().create(SpotifyService.class);
 
@@ -101,6 +131,12 @@ public class FragmentProfile extends Fragment{
                                 tvUserName.setText(name);
                             }
 
+                            // Actualizar email
+                            String email = profile.getEmail();
+                            if (email != null && !email.isEmpty()){
+                                tvUserEmail.setText(email);
+                            }
+
                             // 3. Actualizar Foto de Perfil
                             if (profile.getImages() != null && !profile.getImages().isEmpty()) {
                                 // Tomamos la primera imagen
@@ -114,6 +150,8 @@ public class FragmentProfile extends Fragment{
                                             .into(ivProfilePicture);
                                 }
                             }
+
+                            Log.d("PROFILE", "RAW RESPONSE: " + new Gson().toJson(profile));
 
                         } else {
                             Log.e(TAG, "❌ Error al cargar perfil API: " + response.code());

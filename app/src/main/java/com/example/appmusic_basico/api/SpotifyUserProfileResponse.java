@@ -4,25 +4,23 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 public class SpotifyUserProfileResponse {
+
     @SerializedName("display_name")
     private String displayName;
 
-    @SerializedName("id")
     private String id;
 
-    @SerializedName("images")
-    private List<Image> images;
+    @SerializedName("email")
+    private String email;
+    private List<ImageObject> images;
 
-    // Getters
     public String getDisplayName() { return displayName; }
     public String getId() { return id; }
-    public List<Image> getImages() { return images; }
+    public String getEmail() { return email; }
+    public List<ImageObject> getImages() { return images; }
 
-    // Clase interna para la imagen
-    public static class Image {
-        @SerializedName("url")
+    public static class ImageObject {
         private String url;
-
         public String getUrl() { return url; }
     }
 }

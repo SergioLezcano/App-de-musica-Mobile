@@ -35,14 +35,15 @@ import models.SearchResultItem;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnItemSelectedListener {
 
+    //credenciales de Spotify
     private static final String CLIENT_ID = "d4f8c9e33110499c895d46521552389c";
     private static final String REDIRECT_URI = "spotify-auth-app-basico://callback";
     private static final int REQUEST_CODE = 1337;
-    private static final String TAG = "SpotifyMusicApp";
-    public static SpotifyAppRemote mSpotifyAppRemote;
-    public static String spotifyAccessToken = null;
-    private static String mPendingSpotifyUri = null;
 
+    private static final String TAG = "SpotifyMusicApp";
+    public static SpotifyAppRemote mSpotifyAppRemote; //conexion remota a la app de Spotify
+    public static String spotifyAccessToken = null; //Token de acceso a la app de Spotify
+    private static String mPendingSpotifyUri = null;
     private BottomNavigationView bottomNavigationView;
     private View miniPlayerBar;
     private TextView miniPlayerTrackTitle;
@@ -124,7 +125,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 restoreMiniPlayerState(savedInstanceState);
             }
         }
-
 
         // Autenticación Spotify
         if (spotifyAccessToken == null) {
@@ -219,6 +219,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public void authenticateSpotify(boolean forceAuthDialog) {
         String[] scopes = new String[]{
                 "user-read-private",
+                "user-read-email",
                 "playlist-read-private",
                 "user-read-playback-state",
                 "user-modify-playback-state",
@@ -245,6 +246,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             switch (response.getType()) {
                 case TOKEN:
                     spotifyAccessToken = response.getAccessToken();
+
+                    Intent intentToken = new Intent("SPOTIFY_TOKEN_READY");
+                    intentToken.putExtra("token", spotifyAccessToken);
+                    sendBroadcast(intentToken);
+
                     connectSpotifyRemote(true);
                     notifyFragmentSearchToLoad();
                     break;
@@ -428,15 +434,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             mPlayerStateSubscription = null;
         }
 
-        // 5. Iniciar el flujo de autenticación nuevamente
-        Toast.makeText(this, "Cerrando sesión. Por favor, inicie sesión de nuevo.", Toast.LENGTH_LONG).show();
-        authenticateSpotify(true);
-
         // 6. Volver a la Home y asegurar que se esconde el mini reproductor
         loadHomeFragment();
         if (miniPlayerBar != null) {
             miniPlayerBar.setVisibility(View.GONE);
         }
+
+        // 5. Iniciar el flujo de autenticación nuevamente
+        Toast.makeText(this, "Cerrando sesión. Por favor, inicie sesión de nuevo.", Toast.LENGTH_LONG).show();
+        authenticateSpotify(true);
     }
 
     @Override

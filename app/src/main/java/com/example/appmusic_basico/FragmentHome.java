@@ -55,6 +55,7 @@ public class FragmentHome extends Fragment {
     private BroadcastReceiver favoriteUpdateReceiver;
     private TextView tvBienvenidoUsuario;
     private ImageView ivFotoPerfilHome;
+    private BroadcastReceiver tokenReceiver;
 
     // ===========================================================
     // 🧩 CICLO DE VIDA
@@ -73,6 +74,20 @@ public class FragmentHome extends Fragment {
 
         tvBienvenidoUsuario = view.findViewById(R.id.tv_bienvenido_usuario);
         ivFotoPerfilHome = view.findViewById(R.id.iv_foto_perfil_home);
+
+        tokenReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String token = intent.getStringExtra("token");
+                if (token != null) {
+                    MainActivity.spotifyAccessToken = token;
+                    cargarDatosPerfil(); //ejecuta con token
+                }
+            }
+        };
+
+        ContextCompat.registerReceiver(requireActivity(), tokenReceiver,
+                new IntentFilter("SPOTIFY_TOKEN_READY"), ContextCompat.RECEIVER_EXPORTED);
 
         // --------------------------------------------
         // 🎵 Canciones Recientes
@@ -137,6 +152,7 @@ public class FragmentHome extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        requireActivity().unregisterReceiver(tokenReceiver);
         if (favoriteUpdateReceiver != null) {
             requireContext().unregisterReceiver(favoriteUpdateReceiver);
             favoriteUpdateReceiver = null;
